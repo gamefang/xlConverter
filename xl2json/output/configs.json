@@ -1,0 +1,32 @@
+{
+  "Conf_Achieve": {
+    "test": {
+      "Name": "成就",
+      "Tip": "一个测试成就",
+      "Fulfill_value": 100
+    },
+    "testhide": {
+      "Name": "隐藏成就",
+      "Tip": "又一个测试成就",
+      "Fulfill_value": 100
+    }
+  },
+  "Conf_Buff": {
+    "101": {
+      "Name": "伊卡洛斯的翅翼",
+      "Tip": "一双翅翼使你飞了起来",
+      "Icon": "images/icons/wings.png",
+      "Visable": true,
+      "Duration": 20,
+      "Dotnum": 0
+    },
+    "201": {
+      "Name": "火炬",
+      "Tip": "视野扩大2格",
+      "Icon": "images/icons/fire.png",
+      "Visable": true,
+      "Duration": 20,
+      "Dotnum": 0
+    }
+  }
+}
