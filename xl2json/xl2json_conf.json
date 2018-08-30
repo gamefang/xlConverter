@@ -1,11 +1,12 @@
 {
-"xl_dir":".",
+"xl_dir":"./input",
 "json_dir":"./output",
 "output_in_one":"configs.json",
 "file_exts":["xlsx","xls","xlsm"],
 "sheet_name_prefix":"#",
 "bound_tag":"#",
 "note_signs":["#","//","--"],
+"var_type_pre":["i","f","s","sa","a","o","b"],
 "keep_var_type":false,
 "read_me_mode":false
 }
