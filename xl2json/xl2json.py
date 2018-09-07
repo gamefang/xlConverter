@@ -261,7 +261,7 @@ def json_output(fn,data):
     @param fn: full file path.
     @param data: json data.
     '''
-    with codecs.open(fn,'w','utf8') as f:
+    with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         jsonstr=json.dumps(data,ensure_ascii=False,indent=2)
         jsonstr=jsonstr.replace(r'\\n',r'\n')   #2018/9/6 解决转义字符多次转义错误
         f.write(jsonstr)
