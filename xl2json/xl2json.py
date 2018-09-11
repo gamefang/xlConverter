@@ -45,7 +45,6 @@ __author__='gamefang'
 import xlrd
 
 import os
-import re
 import json
 import codecs
 
@@ -182,6 +181,8 @@ def clean_cell_data(cell,type_value):
     '''
     t=cell.ctype
     if t==0 or not cell.value:    #空，或Excel中残留的'型单元格等情况
+        if type_value==2 and cell.ctype:    #2018/9/11需求字符串且填写数字0用作键的情况
+            return clean_string(cell)
         return {
             0:0,    #int
             1:0.0,  #float
@@ -191,43 +192,50 @@ def clean_cell_data(cell,type_value):
             5:{},   #object
             6:False,    #bool
             }.get(type_value,str(cell.value))
-    elif t==1:  #非数字
-        v=str(cell.value)
-        if type_value==0 and re.match('^(\-|\+)?\d$',v):    #文本形式保存的整数
-            return int(v)
-        elif type_value==1 and re.match('^(-?\d+)(\.\d+)?$',v): #文本形式保存的符点数
-            return float(v)
-        elif type_value==2:
-            return v    #str
-        elif type_value==3:
-            return v.split(',')  #string array
-        elif type_value==4:
-            return eval('[%s,]'%v)   #normal array
-        elif type_value==5:
-            return eval('{%s,}'%v)  #object
-        elif type_value==6:
-            return (v in ('True','TRUE','true','t','T','1')) #bool,可以当True用的字符串
-    elif t==2:  #数字
-        if type_value==3:
-            return v.split(',')
-        return {
-            0:int(cell.value),  #int
-            1:float(cell.value),    #float
-            2:str(int(cell.value)), #str,整数字符串（通常为设计问题）
-            4:eval( '[%s,]' % int(cell.value) ), #normal array,容器里面暂时只存整数
-            5:eval( '{%s,}' % int(cell.value) ),    #object,容器里面暂时只存整数
-            6:bool(cell.value), #bool,有值就算True
-        }.get(type_value,str(cell.value))
+    elif t in [1,2]:    #文本和数字，特殊处理
+        return clean_dic[type_value](cell)
     elif t==4:  #Excel中的TRUE和FALSE
         if type_value==6:
             return bool(cell.value)  #TRUE实际等于1.0
-        else:
-            print('###WARNING!NOT A BOOL! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
-            return str(cell.value)
+        print('###WARNING!NOT A BOOL! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
+        return str(cell.value)
     else:   #其余异常情况
         print('###WARNING!ERROR! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
         return str(cell.value)
-    
+        
+#Excel中对ctype2,3的特殊处理
+def clean_int(cell):    
+    return int(cell.value)
+def clean_float(cell):
+    return float(cell.value)
+def clean_string(cell):
+    if cell.ctype==1:
+        return str(cell.value)
+    return str(int(cell.value))
+def clean_strarray(cell):
+    return str(cell.value).split(',')
+def clean_array(cell):
+    if cell.ctype==1:
+        return eval( '[%s,]' % str(cell.value) )
+    return eval( '[%s,]' % int(cell.value) )
+def clean_object(cell):
+    if cell.ctype==1:
+        return eval( '{%s,}' % str(cell.value) )
+    return eval( '{%s,}' % int(cell.value) )    
+def clean_bool(cell):
+    if cell.ctype==1:
+        return str(cell.value) in ('True','TRUE','true','t','T','1')
+    return bool(cell.value)
+clean_dic={
+        0:clean_int,
+        1:clean_float,
+        2:clean_string,
+        3:clean_strarray,
+        4:clean_array,
+        5:clean_object,
+        6:clean_bool,
+        }
+
 def dic_convert(oridata,cfg):
     '''
     From:
