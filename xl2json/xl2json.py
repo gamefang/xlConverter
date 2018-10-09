@@ -48,6 +48,13 @@ import os
 import json
 import codecs
 
+import argparse
+
+parser = argparse.ArgumentParser(description='generate json from xlsx.')
+parser.add_argument('--type', type=int, default=0, required=False,
+                    help='output type')
+args = parser.parse_args()
+
 def file_list(sDir,tExt):
     '''
     Get custom filelist in some direction.
@@ -312,5 +319,8 @@ def main():
             fn=os.path.join(cfg['json_dir'],'%s.json' % k)
             json_output(fn,v)
             
-if __name__ == '__main__':
+if not args.type:
     main()
+
+#if __name__ == '__main__':
+#    main()
