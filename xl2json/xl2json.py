@@ -2,6 +2,7 @@
 #不能完美支持python2。
 #2018/8/24 实现excel策划配置文件批量导出为json。
 #2018/8/30 添加全字符串数组类型，类型前缀可配置。
+#2018/10/10 添加只有一列自动导出为列表的功能
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
@@ -252,10 +253,23 @@ def dic_convert(oridata,cfg):
     To:
     {'test': {'Name': '成就', 'Tip': '一个测试成就', 'Fulfill_value': 100},
      'testhide': {'Name': '隐藏成就', 'Tip': '又一个测试成就', 'Fulfill_value': 100}}
+    Or:
+    From:
+    [['skey'],
+     ['a'],
+     ['b'],
+     ['c']]
+    To:
+    ['a','b','c']
     @param oridata: original 2-dimensional list.
     @param cfg: global config object.
     @return: a copy of new styled dic.
     '''
+    if len(oridata[0])==1:  #如果只有一列，自动导出成列表
+        result=[]
+        for i in range(1,len(oridata)):
+            result.append(oridata[i][0])
+        return result   
     listdata=oridata.copy()
     dic={}
     pro_names=listdata.pop(0)
