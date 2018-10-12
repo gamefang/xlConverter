@@ -52,8 +52,8 @@ import codecs
 import argparse
 
 parser = argparse.ArgumentParser(description='generate json from xlsx.')
-parser.add_argument('--type', type=int, default=0, required=False,
-                    help='output type')
+parser.add_argument('--style', type=int, default=0, required=False,
+                    help='output style')
 args = parser.parse_args()
 
 def file_list(sDir,tExt):
@@ -244,7 +244,7 @@ clean_dic={
         6:clean_bool,
         }
 
-def dic_convert(oridata,cfg):
+def convertion_default(oridata,cfg,**kw):
     '''
     From:
     [['sId', 'sName', 'sTip', 'iFulfill_value'],
@@ -263,15 +263,15 @@ def dic_convert(oridata,cfg):
     ['a','b','c']
     @param oridata: original 2-dimensional list.
     @param cfg: global config object.
-    @return: a copy of new styled dic.
+    @return: a copy of new styled data.
     '''
     if len(oridata[0])==1:  #如果只有一列，自动导出成列表
-        result=[]
-        for i in range(1,len(oridata)):
-            result.append(oridata[i][0])
-        return result   
+        return [
+                oridata[i][0]
+                for i in range(1,len(oridata))
+                ]    
     listdata=oridata.copy()
-    dic={}
+    result={}
     pro_names=listdata.pop(0)
     for item in listdata:
         subdic={}
@@ -281,9 +281,68 @@ def dic_convert(oridata,cfg):
             else:
                 pre_len=len(cfg['var_type_pre'][get_type_pre(pro_names[i],cfg)])
                 subdic[ pro_names[i][pre_len:] ]=item[i]
-        dic[ item[0] ]=subdic
-    return dic
-
+        result[ item[0] ]=subdic
+    return result
+    
+def convertion_1(oridata,cfg,**kw):
+    '''
+    From:
+    [
+        ['sKey','iParam1','iParam2'],
+        ['1',10,20],
+        ['2',15,25],
+        ['3',25,35]
+    ]
+    To:
+    [
+        {
+          "Key":"1",
+          "Param1": 10,
+          "Param2": 20
+        },
+        {
+          "Key":"2", 
+          "Param1": 15,
+          "Param2": 25
+        },
+        {
+          "Key":"3",
+          "Param1": 25,
+          "Param2": 35
+        }
+    ]
+    Or:
+    From:
+    [['skey'],
+     ['a'],
+     ['b'],
+     ['c']]
+    To:
+    ['a','b','c']
+    @param oridata: original 2-dimensional list.
+    @param cfg: global config object.
+    @return: a copy of new styled result.
+    '''
+    if len(oridata[0])==1:  #如果只有一列，自动导出成列表
+        return [
+                oridata[i][0]
+                for i in range(1,len(oridata))
+                ]
+    listdata=oridata.copy()
+    result=[]
+    if kw['begin_with_null']:result=[None]    #特殊的补null情况(RMMV)
+    pro_names=listdata.pop(0)
+    for item in listdata:
+        subdic={}
+        for i in range(0,len(item)):
+            if cfg['keep_var_type']:
+                subdic[ pro_names[i] ]=item[i]
+            else:
+                pre_len=len(cfg['var_type_pre'][get_type_pre(pro_names[i],cfg)])
+                subdic[ pro_names[i][pre_len:] ]=item[i]
+        result.append(subdic)
+    return result  
+    
 def json_output(fn,data):
     '''
     output json file.
@@ -307,23 +366,31 @@ def show_readme():
     except:
         print(__doc__)
     
-def main():
+def main(style=0):
     #载入配置
     with open(CONF_FILE) as json_file:
         cfg=json.load(json_file)
     if cfg['read_me_mode']:show_readme()
-    #从Excel文件中输入原始数据
+    #从Excel文件中输入原始数据，转为python二维列表
     input_files=file_list(cfg['xl_dir'],cfg['file_exts'])
     raw_data={}
     for fn in input_files:  #文件循环
         global FILENAME
         FILENAME=fn
         raw_data.update(workbook_handle(fn,cfg))
-    #原始数据转化
-    data={
-        k[1:]:dic_convert(v,cfg)
-        for k,v in raw_data.items()
-        }
+    #python原始数据转化处理
+    if not style:
+        data={
+            k[1:]:convertion_default(v,cfg)
+            for k,v in raw_data.items()
+            }
+    elif style==1:
+        data={
+            k[1:]:convertion_1(v,cfg,begin_with_null=True)
+            for k,v in raw_data.items()
+            }
+    else:
+        print('style not existed!')
     #输出为json
     if cfg['output_in_one']:
         fn=os.path.join(cfg['json_dir'],cfg['output_in_one'])
@@ -332,9 +399,6 @@ def main():
         for k,v in data.items():
             fn=os.path.join(cfg['json_dir'],'%s.json' % k)
             json_output(fn,v)
-            
-if not args.type:
-    main()
 
-#if __name__ == '__main__':
-#    main()
+if __name__ == '__main__':
+    main(args.style)
