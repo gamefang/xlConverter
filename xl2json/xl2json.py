@@ -3,6 +3,9 @@
 #2018/8/24 实现excel策划配置文件批量导出为json。
 #2018/8/30 添加全字符串数组类型，类型前缀可配置。
 #2018/10/10 添加只有一列自动导出为列表的功能
+#2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
+
+version='1.3'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
@@ -17,6 +20,7 @@ __doc__='''
     @sheet_name_prefix: Excel文件中，加此前缀的sheet会被导出，可支持多个。前缀只允许一个字符。
     @bound_tag: Excel一个sheet中配置的边界符号，只有边界内的配置内容才会被导出。
     @note_signs: Excel配置中单行、单列注释的前缀，被注释则不会被导出。
+    @allow_inner_note: 是否允许Excel配置中使用内容注释（可能导致字段不统一）。    
     @var_type_pre: Excel配置中字段名前缀字符串，用以区分数据类型，需严格按照以下顺序：
         0-python的int，对应json中的数字num；
         1-python的float，对应json中的数字num；
@@ -39,6 +43,7 @@ Excel文件格式说明
         数组：无需添加两侧[]，但其中嵌套内容需严格遵循json模式，暂不支持浮点型数据；
         对象：无需添加两侧{}，但其中嵌套内容需严格遵循json模式，暂不支持浮点型数据；
         布尔值：Excel所见即所得。
+        不导出数据：由note_signs开头的数据不被导出，需要打开allow_inner_note开关。
 ''' % CONF_FILE
 
 __author__='gamefang'
@@ -119,8 +124,9 @@ def worksheet_handle(sheet,cfg):
                 elif c==bounds[0][1]:   #行注释
                     note_rows.append(r)
                     break   #跳出列循环，开始下一行
-                else:
-                    raise Exception("<FILE>%s <SHEET>%s <ROW>%s <COLUMN>%s:Note Error!" % (FILENAME,SHEETNAME,ROW+1,COLUMN+1) )
+                else:  #内容注释
+                    if not bool(cfg['allow_inner_note']):
+                        raise Exception("<FILE>%s <SHEET>%s <ROW>%s <COLUMN>%s:Inner Note not allowed!" % (FILENAME,SHEETNAME,ROW+1,COLUMN+1) )
             else:
                 if r==bounds[1][0]: #第一行存储类型信息
                     types[c]=get_type_pre(v,cfg)
@@ -276,6 +282,10 @@ def convertion_default(oridata,cfg,**kw):
     for item in listdata:
         subdic={}
         for i in range(1,len(item)):
+            if bool(cfg['allow_inner_note']) and \
+                isinstance(item[i],str) and \
+                item[i].startswith( tuple(cfg['note_signs']) ):
+                    continue  #自定义不输出某key的某些字段
             if cfg['keep_var_type']:
                 subdic[ pro_names[i] ]=item[i]
             else:
@@ -335,6 +345,10 @@ def convertion_1(oridata,cfg,**kw):
     for item in listdata:
         subdic={}
         for i in range(0,len(item)):
+            if bool(cfg['allow_inner_note']) and \
+                isinstance(item[i],str) and \
+                item[i].startswith( tuple(cfg['note_signs']) ):
+                    continue  #自定义不输出某key的某些字段        
             if cfg['keep_var_type']:
                 subdic[ pro_names[i] ]=item[i]
             else:

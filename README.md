@@ -247,6 +247,7 @@ xl2json --style 0
     @sheet_name_prefix: Excel文件中，加此前缀的sheet会被导出，可支持多个。前缀只允许一个字符。
     @bound_tag: Excel一个sheet中配置的边界符号，只有边界内的配置内容才会被导出。
     @note_signs: Excel配置中单行、单列注释的前缀，被注释则不会被导出。
+    @allow_inner_note: 是否允许Excel配置中使用内容注释（可能导致字段不统一）。 	
     @var_type_pre: Excel配置中字段名前缀字符串，用以区分数据类型，需严格按照以下顺序：
         0-python的int，对应json中的数字num；
         1-python的float，对应json中的数字num；
@@ -272,3 +273,11 @@ xl2json --style 0
         数组：无需添加两侧[]，但其中嵌套内容需严格遵循json模式，暂不支持浮点型数据；
         对象：无需添加两侧{}，但其中嵌套内容需严格遵循json模式，暂不支持浮点型数据；
         布尔值：Excel所见即所得。
+		不导出数据：由note_signs开头的数据不被导出，需要打开allow_inner_note开关。
+		
+------------
+
+## 版本记录
+
+- version1.3
+	2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段

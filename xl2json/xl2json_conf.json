@@ -6,6 +6,7 @@
 "sheet_name_prefix":"#",
 "bound_tag":"#",
 "note_signs":["#","//","--"],
+"allow_inner_note":true,
 "var_type_pre":["i","f","s","sa","a","o","b"],
 "keep_var_type":false,
 "read_me_mode":false

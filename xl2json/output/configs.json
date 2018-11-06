@@ -3,14 +3,11 @@
     "test": {
       "Name": "成就",
       "Tip": "一个测试成就",
-      "Fulfill_value": 100,
-      "aRefs": "test,testhide"
+      "Fulfill_value": "test,testhide"
     },
     "testhide": {
       "Name": "隐藏成就",
-      "Tip": "又一个测试成就",
-      "Fulfill_value": 100,
-      "aRefs": ""
+      "Tip": "又一个测试成就"
     }
   },
   "Conf_Buff": {
