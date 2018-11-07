@@ -27,7 +27,7 @@ def main():
         cfg=json.load(json_file)
     if cfg['read_me_mode']:show_readme()
     #从Excel文件中输入原始数据，转为python二维列表
-    input_files=file_list(cfg['xl_dir'],cfg['file_exts'])
+    input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
     raw_data={}
     for fn in input_files:  #文件循环
         global FILENAME

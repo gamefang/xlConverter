@@ -5,15 +5,16 @@
 #2018/10/10 添加只有一列自动导出为列表的功能
 #2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 
-version='1.3'
+version='1.3.1'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
 __doc__='''
 配置文件说明(%s)
     配置文件可调整部分功能，需要严格遵循json格式。
-    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件‍（递归式）。
+    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件。
     @json_dir: 输出json文件的目录。
+    @recursive_xl_files: 是否采用递归形式搜索Excel文件目录。
     @output_in_one: 如果为false或0，则分别输出json文件，文件名为Excel对应sheet名；
                     如果为字符串，则输出至一个文件，例如填写config.json，则将所有Excel文件内容输出至该文件中。
     @file_exts: 搜寻的Excel文件後缀。另外默认以'~$','__'开头的excel文件不会被搜寻。
@@ -61,19 +62,26 @@ parser.add_argument('--style', type=int, default=0, required=False,
                     help='output style')
 args = parser.parse_args()
 
-def file_list(sDir,tExt):
+def file_list(sDir,tExt,bRecursive=False):
     '''
     Get custom filelist in some direction.
     @param sDir: the full direction to handle.
     @param tExt: a tuple of file extensions.
+    @param bRecursive: search files recursive.
     @return: list of filenames.
     '''
     lFiles=[]
-    for root, dirs, files in os.walk(sDir):
-        for f in files:
+    if bRecursive:
+        for root, dirs, files in os.walk(sDir):
+            for f in files:
+                if f.startswith( ('~$','__') ):continue    #2017/11/20 避免加入隐藏文件 2018/4/23 双下划线文件不导出
+                if os.path.splitext(f)[1][1:] in tExt:
+                    lFiles.append(os.path.join(root,f))
+    else:
+        for f in os.listdir(sDir):
             if f.startswith( ('~$','__') ):continue    #2017/11/20 避免加入隐藏文件 2018/4/23 双下划线文件不导出
             if os.path.splitext(f)[1][1:] in tExt:
-                lFiles.append(os.path.join(root,f))
+                lFiles.append(os.path.join(sDir,f))
     return lFiles
 
 def workbook_handle(fn,cfg):
@@ -386,7 +394,7 @@ def main(style=0):
         cfg=json.load(json_file)
     if cfg['read_me_mode']:show_readme()
     #从Excel文件中输入原始数据，转为python二维列表
-    input_files=file_list(cfg['xl_dir'],cfg['file_exts'])
+    input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
     raw_data={}
     for fn in input_files:  #文件循环
         global FILENAME

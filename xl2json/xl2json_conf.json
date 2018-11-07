@@ -1,6 +1,7 @@
 {
 "xl_dir":"./input",
 "json_dir":"./output",
+"recursive_xl_files":false,
 "output_in_one":"configs.json",
 "file_exts":["xlsx","xls","xlsm"],
 "sheet_name_prefix":"#",
