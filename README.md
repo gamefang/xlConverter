@@ -239,8 +239,8 @@ xl2json --style 0
 
 ```
     配置文件可调整部分功能，需要严格遵循json格式。
-    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件。
-    @json_dir: 输出json文件的目录。
+    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件。路径分隔符必须用“/”！
+    @json_dir: 输出json文件的目录。路径分隔符必须用“/”！
     @recursive_xl_files: 是否采用递归形式搜索Excel文件目录。
     @output_in_one: 如果为false或0，则分别输出json文件，文件名为Excel对应sheet名；
                     如果为字符串，则输出至一个文件，例如填写config.json，则将所有Excel文件内容输出至该文件中。
@@ -284,3 +284,5 @@ xl2json --style 0
 	2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 - version1.3.1
 	2018/11/7 添加是否递归搜索Excel文件夹的选项
+- version1.3.2
+	2018/11/9 优化JSON配置文件加载错误处理

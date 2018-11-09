@@ -5,15 +5,15 @@
 #2018/10/10 添加只有一列自动导出为列表的功能
 #2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 
-version='1.3.1'
+version='1.3.2'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
 __doc__='''
 配置文件说明(%s)
     配置文件可调整部分功能，需要严格遵循json格式。
-    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件。
-    @json_dir: 输出json文件的目录。
+    @xl_dir: Excel文件的存放目录，会自动搜寻目录下所有Excel文件。路径分隔符必须用“/”！
+    @json_dir: 输出json文件的目录。路径分隔符必须用“/”！
     @recursive_xl_files: 是否采用递归形式搜索Excel文件目录。
     @output_in_one: 如果为false或0，则分别输出json文件，文件名为Excel对应sheet名；
                     如果为字符串，则输出至一个文件，例如填写config.json，则将所有Excel文件内容输出至该文件中。
@@ -391,7 +391,11 @@ def show_readme():
 def main(style=0):
     #载入配置
     with open(CONF_FILE) as json_file:
-        cfg=json.load(json_file)
+        try:
+            cfg=json.load(json_file)
+        except Exception as e:
+            print('##JSON ERROR in %s!\n%s' % (CONF_FILE,e) )
+            return
     if cfg['read_me_mode']:show_readme()
     #从Excel文件中输入原始数据，转为python二维列表
     input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
