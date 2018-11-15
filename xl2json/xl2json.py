@@ -5,7 +5,7 @@
 #2018/10/10 添加只有一列自动导出为列表的功能
 #2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 
-version='1.3.2'
+version='1.3.3'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
@@ -220,10 +220,19 @@ def clean_cell_data(cell,type_value):
         if type_value==6:
             return bool(cell.value)  #TRUE实际等于1.0
         print('###WARNING!NOT A BOOL! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
-        return str(cell.value)
+    elif t==3:  #Excel中的日期或时间
+        if type_value==2:   #只接受字符串形式时间
+            timetuple=xlrd.xldate_as_tuple(cell.value, 0)
+            if timetuple[3]==0: #只有日期
+                return '/'.join( [ str(item) for item in timetuple[:3] ] )
+            else:
+                return '/'.join( [ str(item) for item in timetuple[:3] ] ) + \
+                       ' ' + \
+                       ':'.join( [ str(item) for item in timetuple[3:] ] )
+        print('###WARNING!DATETIME TYPE ONLY STRING OUTPUT SUPPORTED! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
     else:   #其余异常情况
         print('###WARNING!ERROR! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
-        return str(cell.value)
+    return str(cell.value)
         
 #Excel中对ctype2,3的特殊处理
 def clean_int(cell):    

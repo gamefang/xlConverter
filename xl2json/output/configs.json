@@ -3,7 +3,7 @@
     "test": {
       "Name": "成就",
       "Tip": "一个测试成就",
-      "Fulfill_value": "test,testhide"
+      "Fulfill_value": "2018/11/15"
     },
     "testhide": {
       "Name": "隐藏成就",
