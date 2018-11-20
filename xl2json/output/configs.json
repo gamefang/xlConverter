@@ -16,7 +16,7 @@
       "Tip": "一双翅翼使你飞了起来",
       "Icon": "images/icons/wings.png",
       "Visable": true,
-      "Duration": 20,
+      "Duration": 0.2,
       "Dotnum": 0
     },
     "201": {
@@ -24,7 +24,15 @@
       "Tip": "视野扩大2格",
       "Icon": "images/icons/fire.png",
       "Visable": true,
-      "Duration": 20,
+      "Duration": 0.28,
+      "Dotnum": 0
+    },
+    "301": {
+      "Name": "火炬",
+      "Tip": "视野扩大2格",
+      "Icon": "images/icons/fire.png",
+      "Visable": true,
+      "Duration": 0.36,
       "Dotnum": 0
     }
   },

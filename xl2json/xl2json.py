@@ -5,7 +5,7 @@
 #2018/10/10 添加只有一列自动导出为列表的功能
 #2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 
-version='1.3.3'
+version='1.3.4'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
@@ -189,7 +189,13 @@ def get_type_pre(val,cfg):
 def clean_cell_data(cell,type_value):
     '''
     Get a python type variable,from Excel-Cell-Object in xlrd.
-    Need RE.
+        ctype0-empty str
+        ctype1-str
+        ctype2-float
+        ctype3-datetime
+        ctype4-int
+        ctype5-excel error
+        ctype6-empty
     @param cell: cell object in xlrd.
     @param type_value: the value of type:
         0-int
@@ -238,7 +244,7 @@ def clean_cell_data(cell,type_value):
 def clean_int(cell):    
     return int(cell.value)
 def clean_float(cell):
-    return float(cell.value)
+    return float('%.8f' % cell.value)
 def clean_string(cell):
     if cell.ctype==1:
         return str(cell.value)
