@@ -5,7 +5,7 @@
 #2018/10/10 添加只有一列自动导出为列表的功能
 #2018/11/6 添加内容注释功能，可选择性屏蔽部分key的部分字段
 
-version='1.3.4'
+version='1.3.5'
 
 CONF_FILE='xl2json_conf.json'   #配置文件路径
 
@@ -298,7 +298,17 @@ def convertion_default(oridata,cfg,**kw):
         return [
                 oridata[i][0]
                 for i in range(1,len(oridata))
-                ]    
+                ]
+    elif len(oridata)==2: #横向键值对组合
+        resultd={}
+        if cfg['keep_var_type']:
+            for colnum in range(len(oridata[0])):
+                resultd[oridata[0][colnum]]=oridata[1][colnum]
+        else:
+            for colnum in range(len(oridata[0])):
+                pre_len=len(cfg['var_type_pre'][get_type_pre(oridata[0][colnum],cfg)])
+                resultd[ oridata[0][colnum][pre_len:] ]=oridata[1][colnum]
+        return resultd
     listdata=oridata.copy()
     result={}
     pro_names=listdata.pop(0)
@@ -361,6 +371,16 @@ def convertion_1(oridata,cfg,**kw):
                 oridata[i][0]
                 for i in range(1,len(oridata))
                 ]
+    elif len(oridata)==2: #横向键值对组合
+        resultd={}
+        if cfg['keep_var_type']:
+            for colnum in range(len(oridata[0])):
+                resultd[oridata[0][colnum]]=oridata[1][colnum]
+        else:
+            for colnum in range(len(oridata[0])):
+                pre_len=len(cfg['var_type_pre'][get_type_pre(oridata[0][colnum],cfg)])
+                resultd[ oridata[0][colnum][pre_len:] ]=oridata[1][colnum]
+        return resultd                
     listdata=oridata.copy()
     result=[]
     if kw['begin_with_null']:result=[None]    #特殊的补null情况(RMMV)
