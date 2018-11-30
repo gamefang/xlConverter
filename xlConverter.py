@@ -4,6 +4,8 @@
 version='1.4.0'
 __author__='gamefang'
 
+CFG_FILE_PATH='xlConverter.ini'
+
 __doc__='''
 INI配置文件说明
     配置文件可调整部分功能，需要严格遵循json格式。
@@ -61,8 +63,8 @@ def show_readme():
         
 def main():
     #加载配置
-    cfg=get_cfg()
-    if s2b(cfg['read_me_mode']):show_readme()
+    cfg=get_cfg(CFG_FILE_PATH)
+    if cfg['read_me_mode']:show_readme()
     #excel原始数据导入
     raw_data=xlLoader.get_data(cfg['xlloader'])
     print(raw_data)
@@ -84,4 +86,6 @@ def main():
             # json_output(fn,v)
 
 if __name__ == '__main__':
+    #import cfgLoader
+    #cfg=get_cfg(CFG_FILE_PATH)
     main()

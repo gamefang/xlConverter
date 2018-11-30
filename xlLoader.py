@@ -75,7 +75,7 @@ def worksheet_handle(sheet,cfg):
             COLUMN=c
             if c in note_cols:continue   #跳过注释列
             v=str(sheet.cell(r,c).value)    #获取字符串形式原始数据
-            if v.lstrip().startswith( s2ts(cfg['note_signs']) ):  #注释排查（裁剪左端空字符）
+            if v.lstrip().startswith( cfg['note_signs'] ):  #注释排查（裁剪左端空字符）
                 if r==bounds[1][0]: #列注释
                     note_cols.append(c)
                     continue   #下一列
@@ -83,7 +83,7 @@ def worksheet_handle(sheet,cfg):
                     note_rows.append(r)
                     break   #跳出列循环，开始下一行
                 else:  #内容注释
-                    if not s2b(cfg['allow_inner_note']):
+                    if not cfg['allow_inner_note']:
                         raise Exception("<FILE>%s <SHEET>%s <ROW>%s <COLUMN>%s:Inner Note not allowed!" % (FILENAME,SHEETNAME,ROW+1,COLUMN+1) )
             else:
                 if r==bounds[1][0]: #第一行存储类型信息
@@ -132,7 +132,7 @@ def get_type_pre(val,cfg):
         6-boolean
     '''
     if val.lower()=='key':return 2    #json的key必须是string
-    for i,pre in enumerate(s2ls(cfg['var_type_pre'])):
+    for i,pre in enumerate(cfg['var_type_pre']):
         if val.startswith(pre):return i
     return 2    #特殊情况均视为str
     
@@ -224,7 +224,7 @@ clean_dic={
         }
         
 def get_data(cfg):
-    input_files=file_list(cfg['xl_dir'],s2ls(cfg['file_exts']),s2b(cfg['recursive_xl_files']))
+    input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
     raw_data={}
     for fn in input_files:  #文件循环
         #global FILENAME
