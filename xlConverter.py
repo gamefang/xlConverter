@@ -66,16 +66,22 @@ def main():
     cfg=cfgLoader.get_cfg(CFG_FILE_PATH)
     if cfg['read_me_mode']:show_readme()
     #excel原始数据导入
-    raw_data=xlLoader.get_data(cfg['xlloader'])
+    raw_data=xlLoader.get_data(cfg)
     print(raw_data)
-    # input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
-    # raw_data={}
-    # for fn in input_files:  #文件循环
-        # global FILENAME
-        # FILENAME=fn
-        # raw_data.update(workbook_handle(fn,cfg))
     #数据转化
-    #data=dataConverter.get_data(cfg['dataConverter'])
+    if not cfg['convert_style']:
+        data={
+            k[1:]:dataConverter.convertion_default(v,cfg)
+            for k,v in raw_data.items()
+            }
+    elif cfg['convert_style']==1:
+        data={
+            k[1:]:dataConverter.convertion_1(v,cfg)
+            for k,v in raw_data.items()
+            }
+    else:
+        print('convert_style not existed!')
+    print(data)
     #输出
     # if cfg['output_in_one']:
         # fn=os.path.join(cfg['json_dir'],cfg['output_in_one'])

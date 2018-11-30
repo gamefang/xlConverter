@@ -1,27 +1,18 @@
 # -*- coding: utf-8 -*-
 # python3.7+
 
-def s2b(str):
-    '''
-    字符串转bool
-    '''
+def s2b(str):   #字符串转bool
     return True if str.lower() in ('true','1') else False
-    
-def s2ls(str):
-    '''
-    字符串分割为字符串list
-    '''
+def s2ls(str):  #字符串分割为字符串list
     return str.split(',')
-    
-def s2ts(str):
-    '''
-    字符串分割为字符串tuple
-    '''
+def s2ts(str):  #字符串分割为字符串tuple
     return tuple(str.split(','))
 
 dic_type={  #默认为字符串类型
-        'b_':s2b,   #bool
-        'ts_':s2ts, #字符串元组
+        'b_':s2b,
+        'ts_':s2ts,
+        'i_':int,
+        'f_':float,
         }
 
 def odic_clean(odic):

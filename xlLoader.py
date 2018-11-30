@@ -36,7 +36,7 @@ def workbook_handle(fn,cfg):
     '''
     处理某一个excel文件。
     @param fn: excel文件完整路径。
-    @param cfg: 全局配置对象。
+    @param cfg: xlloader配置对象。
     @return: 整个工作簿的数据。
     '''
     wb=xlrd.open_workbook(fn)
@@ -47,14 +47,14 @@ def workbook_handle(fn,cfg):
             sheet=wb.sheet_by_name(sn)
         else:
             continue
-        datas[sn]=worksheet_handle(sheet,cfg)
+        datas[ sn[len(cfg['sheet_name_prefix']):] ]=worksheet_handle(sheet,cfg)
     return datas
 
 def worksheet_handle(sheet,cfg):
     '''
     处理一个excel工作表。
     @param sheet: sheet对象
-    @param cfg: 全局配置对象。
+    @param cfg: xlloader配置对象。
     @return: 工作表的数据。
     '''
     bounds=get_sheet_bounds(sheet,cfg)
@@ -79,14 +79,14 @@ def worksheet_handle(sheet,cfg):
                     break   #跳出列循环，开始下一行
                 else:  #内容注释
                     if not cfg['allow_inner_note']:
-                        raise Exception("<FILE>%s <SHEET>%s <ROW>%s <COLUMN>%s:Inner Note not allowed!" % (FILENAME,SHEETNAME,ROW+1,COLUMN+1) )
+                        raise Exception(f'<FILE>{FILENAME} <SHEET>{SHEETNAME} <ROW>{ROW+1} <COLUMN>{COLUMN+1}:Inner Note not allowed!')
             else:
                 if r==bounds[1][0]: #第一行存储类型信息
                     types[c]=get_type_pre(v,cfg)
                     cv=v
                 else:
                     cv=clean_cell_data(sheet.cell(r,c),types[c])    #Cell对象数据清洗并保存为实际类型
-                    if cv==None:print("<FILE>%s <SHEET>%s <ROW>%s <COLUMN>%s:Value Error!" % (FILENAME,SHEETNAME,ROW+1,COLUMN+1) )
+                    if cv==None:print(f'<FILE>{FILENAME} <SHEET>{SHEETNAME} <ROW>{ROW+1} <COLUMN>{COLUMN+1}:Value Error!')
                 this_row.append(cv)
         if this_row:
             this_data.append(this_row)
@@ -108,7 +108,7 @@ def get_sheet_bounds(sheet,cfg):
     if len(bounds)!=2 or \
        bounds[0][0]==bounds[1][0] or \
        bounds[0][1]==bounds[1][1]:  #标记!=2个 or 标记坐标的rc有一样的，返回错误。
-        raise Exception("<FILE>%s <SHEET>%s:bound tags error!\nNeed exactly 2 tags,and can't be in the same row or column!" % (FILENAME,SHEETNAME))
+        raise Exception(f"<FILE>{FILENAME} <SHEET>{SHEETNAME}:bound tags error!\nNeed exactly 2 tags,and can't be in the same row or column!")
     else:   #标记正常，开始遍历取值
         return bounds
         
@@ -170,7 +170,7 @@ def clean_cell_data(cell,type_value):
     elif t==4:  #Excel中的TRUE和FALSE
         if type_value==6:
             return bool(cell.value)  #TRUE实际等于1.0
-        print('###WARNING!NOT A BOOL! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
+        print(f'###WARNING!NOT A BOOL!<FILE>{FILENAME} <SHEET>{SHEETNAME} cell.value:{cell.value},cell.ctype:{cell.ctype}')
     elif t==3:  #Excel中的日期或时间
         if type_value==2:   #只接受字符串形式时间
             timetuple=xlrd.xldate_as_tuple(cell.value, 0)
@@ -180,9 +180,9 @@ def clean_cell_data(cell,type_value):
                 return '/'.join( [ str(item) for item in timetuple[:3] ] ) + \
                        ' ' + \
                        ':'.join( [ str(item) for item in timetuple[3:] ] )
-        print('###WARNING!DATETIME TYPE ONLY STRING OUTPUT SUPPORTED! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
+        print('###WARNING!DATETIME TYPE ONLY STRING OUTPUT SUPPORTED!<FILE>{FILENAME} <SHEET>{SHEETNAME} cell.value:{cell.value},cell.ctype:{cell.ctype}')
     else:   #其余异常情况
-        print('###WARNING!ERROR! cell.value:{self.value},cell.ctype:{self.ctype}'.format(self=cell))
+        print('###WARNING!ERROR!<FILE>{FILENAME} <SHEET>{SHEETNAME} cell.value:{cell.value},cell.ctype:{cell.ctype}')
     return str(cell.value)
         
 #Excel中对ctype2,3的特殊处理
