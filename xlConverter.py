@@ -44,7 +44,7 @@ Excel文件格式说明
         不导出数据：由note_signs开头的数据不被导出，需要打开allow_inner_note开关。
 '''
 
-from cfgLoader import *
+import cfgLoader
 import xlLoader
 import dataConverter
 import jsonParser
@@ -63,7 +63,7 @@ def show_readme():
         
 def main():
     #加载配置
-    cfg=get_cfg(CFG_FILE_PATH)
+    cfg=cfgLoader.get_cfg(CFG_FILE_PATH)
     if cfg['read_me_mode']:show_readme()
     #excel原始数据导入
     raw_data=xlLoader.get_data(cfg['xlloader'])
@@ -86,6 +86,4 @@ def main():
             # json_output(fn,v)
 
 if __name__ == '__main__':
-    #import cfgLoader
-    #cfg=get_cfg(CFG_FILE_PATH)
     main()

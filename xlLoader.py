@@ -5,8 +5,6 @@ import os
 
 import xlrd
 
-from cfgLoader import *
-
 FILENAME=None
 SHEETNAME=None
 ROW=None
@@ -44,7 +42,6 @@ def workbook_handle(fn,cfg):
     wb=xlrd.open_workbook(fn)
     datas={}
     for sn in wb.sheet_names(): #sheet循环
-        #global SHEETNAME
         SHEETNAME=sn
         if sn.startswith(cfg['sheet_name_prefix']):  #是否需导出检测
             sheet=wb.sheet_by_name(sn)
@@ -66,12 +63,10 @@ def worksheet_handle(sheet,cfg):
     note_rows=[]
     types={}
     for r in range(bounds[1][0],bounds[0][0]):
-        #global ROW
         ROW=r
         if r in note_rows:continue   #跳过注释行
         this_row=[]
         for c in range(bounds[0][1],bounds[1][1]):
-            #global COLUMN
             COLUMN=c
             if c in note_cols:continue   #跳过注释列
             v=str(sheet.cell(r,c).value)    #获取字符串形式原始数据
@@ -227,10 +222,6 @@ def get_data(cfg):
     input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
     raw_data={}
     for fn in input_files:  #文件循环
-        #global FILENAME
         FILENAME=fn
         raw_data.update(workbook_handle(fn,cfg))
     return raw_data
-        
-if __name__ == '__main__':
-    pass
