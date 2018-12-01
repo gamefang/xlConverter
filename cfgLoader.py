@@ -28,11 +28,11 @@ def s2ls(str):  #字符串分割为字符串list
 def s2ts(str):  #字符串分割为字符串tuple
     return tuple(str.split(','))
 
-dic_type={  #默认为字符串类型
-        'b_':s2b,
-        'ts_':s2ts,
-        'i_':int,
-        'f_':float,
+dic_type={  #类型前缀，默认为字符串
+        '<b>':s2b,
+        '<ts>':s2ts,
+        '<i>':int,
+        '<f>':float,
         }
 
 def odic_clean(odic):
