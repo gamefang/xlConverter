@@ -43,11 +43,11 @@ def workbook_handle(fn,cfg):
     datas={}
     for sn in wb.sheet_names(): #sheet循环
         SHEETNAME=sn
-        if sn.startswith(cfg['sheet_name_prefix']):  #是否需导出检测
+        if sn.startswith(cfg.sheet_name_prefix):  #是否需导出检测
             sheet=wb.sheet_by_name(sn)
         else:
             continue
-        datas[ sn[len(cfg['sheet_name_prefix']):] ]=worksheet_handle(sheet,cfg)
+        datas[ sn[len(cfg.sheet_name_prefix):] ]=worksheet_handle(sheet,cfg)
     return datas
 
 def worksheet_handle(sheet,cfg):
@@ -70,7 +70,7 @@ def worksheet_handle(sheet,cfg):
             COLUMN=c
             if c in note_cols:continue   #跳过注释列
             v=str(sheet.cell(r,c).value)    #获取字符串形式原始数据
-            if v.lstrip().startswith( cfg['note_signs'] ):  #注释排查（裁剪左端空字符）
+            if v.lstrip().startswith( cfg.note_signs ):  #注释排查（裁剪左端空字符）
                 if r==bounds[1][0]: #列注释
                     note_cols.append(c)
                     continue   #下一列
@@ -78,7 +78,7 @@ def worksheet_handle(sheet,cfg):
                     note_rows.append(r)
                     break   #跳出列循环，开始下一行
                 else:  #内容注释
-                    if not cfg['allow_inner_note']:
+                    if not cfg.allow_inner_note:
                         raise Exception(f'<FILE>{FILENAME} <SHEET>{SHEETNAME} <ROW>{ROW+1} <COLUMN>{COLUMN+1}:Inner Note not allowed!')
             else:
                 if r==bounds[1][0]: #第一行存储类型信息
@@ -103,7 +103,7 @@ def get_sheet_bounds(sheet,cfg):
     bounds=[]
     for c in range(sheet.ncols):    #遍历row、column，找出值为"#"的单元格2个，记录rc坐标。保持先row标再col标
         for r in range(sheet.nrows):
-            if sheet.cell(r,c).value==cfg['bound_tag']:
+            if sheet.cell(r,c).value==cfg.bound_tag:
                 bounds.append([r,c])
     if len(bounds)!=2 or \
        bounds[0][0]==bounds[1][0] or \
@@ -127,7 +127,7 @@ def get_type_pre(val,cfg):
         6-boolean
     '''
     if val.lower()=='key':return 2    #json的key必须是string
-    for i,pre in enumerate(cfg['var_type_pre']):
+    for i,pre in enumerate(cfg.var_type_pre):
         if val.startswith(pre):return i
     return 2    #特殊情况均视为str
     
@@ -219,7 +219,7 @@ clean_dic={
         }
         
 def get_data(cfg):
-    input_files=file_list(cfg['xl_dir'],cfg['file_exts'],cfg['recursive_xl_files'])
+    input_files=file_list(cfg.xl_dir,cfg.file_exts,cfg.recursive_xl_files)
     raw_data={}
     for fn in input_files:  #文件循环
         FILENAME=fn
