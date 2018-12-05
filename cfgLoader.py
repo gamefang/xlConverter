@@ -49,6 +49,9 @@ def odic_clean(odic):
             for pre in dic_type.keys():
                 if k.startswith(pre):
                     myk=k[len(pre):]
+                    # if v=='None':   #所有非字符串的None均为None
+                        # myv=None
+                    # else:
                     myv=dic_type[pre](v)
         result[myk]=myv
     return result

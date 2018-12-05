@@ -130,6 +130,7 @@ def convertion_1(oridata,cfg,**kw):
     return result
     
 def convert(raw_data,cfg):
+    if cfg.output_type==1:return raw_data   #输出md文件使用原格式
     if not cfg.convert_style:
         data={
             k[:]:convertion_0(v,cfg)

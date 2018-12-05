@@ -47,8 +47,7 @@ Excel文件格式说明
 import cfgLoader
 import xlLoader
 import dataConverter
-import jsonParser
-import mdParser
+import dataParser
     
 def show_readme():
     '''
@@ -67,18 +66,10 @@ def main():
     if cfg.read_me_mode:show_readme()
     #excel原始数据导入
     raw_data=xlLoader.get_data(cfg)
-    print(raw_data)
     #数据转化
     data=dataConverter.convert(raw_data,cfg)
-    print(data)
     #输出
-    # if cfg['output_in_one']:
-        # fn=os.path.join(cfg['json_dir'],cfg['output_in_one'])
-        # json_output(fn,data)
-    # else:
-        # for k,v in data.items():
-            # fn=os.path.join(cfg['json_dir'],'%s.json' % k)
-            # json_output(fn,v)
+    dataParser.parse(data,cfg)
 
 if __name__ == '__main__':
     main()
