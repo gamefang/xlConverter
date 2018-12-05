@@ -69,19 +69,8 @@ def main():
     raw_data=xlLoader.get_data(cfg)
     print(raw_data)
     #数据转化
-    # if not cfg.convert_style:
-        # data={
-            # k[1:]:dataConverter.convertion_default(v,cfg)
-            # for k,v in raw_data.items()
-            # }
-    # elif cfg.convert_style==1:
-        # data={
-            # k[1:]:dataConverter.convertion_1(v,cfg)
-            # for k,v in raw_data.items()
-            # }
-    # else:
-        # print('convert_style not existed!')
-    # print(data)
+    data=dataConverter.convert(raw_data,cfg)
+    print(data)
     #输出
     # if cfg['output_in_one']:
         # fn=os.path.join(cfg['json_dir'],cfg['output_in_one'])
