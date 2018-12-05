@@ -15,8 +15,8 @@ def json_output(fn,data,cfg):
         jsonstr=json.dumps(
                             data,
                             ensure_ascii=False,
-                            #indent=cfg.json_indent,
-                            #separators=cfg.json_separators
+                            indent=cfg.json_indent,
+                            separators=eval(cfg.json_separators),
                             )
         jsonstr=jsonstr.replace(r'\\n',r'\n')   #2018/9/6 解决转义字符多次转义错误
         f.write(jsonstr)

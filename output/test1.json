@@ -1,1 +1,13 @@
-{"test": {"name": "成就", "tip": "一个测试成就", "value": "2018/11/15", "date": "呵呵呵"}, "testhide": {"name": "隐藏成就", "tip": "又一个测试成就", "value": "ojewoif"}}
+{
+  "test": {
+    "name": "成就",
+    "tip": "一个测试成就",
+    "value": "2018/11/15",
+    "date": "呵呵呵"
+  },
+  "testhide": {
+    "name": "隐藏成就",
+    "tip": "又一个测试成就",
+    "value": "ojewoif"
+  }
+}
