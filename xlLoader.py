@@ -185,7 +185,11 @@ def clean_cell_data(cell,type_value):
         print('###WARNING!ERROR!<FILE>{FILENAME} <SHEET>{SHEETNAME} cell.value:{cell.value},cell.ctype:{cell.ctype}')
     return str(cell.value)
         
-#Excel中对ctype2,3的特殊处理
+def d_clean_array(fun): #去除空数组
+    def wrapper(*args,**kwargs):
+        return [item for item in fun(*args,**kwargs) if item]
+    return wrapper
+#Excel中对ctype2,3的特殊处理    
 def clean_int(cell):    
     return int(cell.value)
 def clean_float(cell):
@@ -194,6 +198,7 @@ def clean_string(cell):
     if cell.ctype==1:
         return str(cell.value)
     return str(int(cell.value))
+@d_clean_array
 def clean_strarray(cell):
     return str(cell.value).split(',')
 def clean_array(cell):
