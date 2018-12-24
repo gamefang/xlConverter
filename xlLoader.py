@@ -86,7 +86,6 @@ def worksheet_handle(sheet,cfg):
                     cv=v
                 else:
                     cv=clean_cell_data(sheet.cell(r,c),types[c],cfg)    #Cell对象数据清洗并保存为实际类型
-                    if cv==None:print(f'<FILE>{FILENAME} <SHEET>{SHEETNAME} <ROW>{ROW+1} <COLUMN>{COLUMN+1}:Value Error!')
                 this_row.append(cv)
         if this_row:
             this_data.append(this_row)
