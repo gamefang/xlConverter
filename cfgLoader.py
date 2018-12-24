@@ -20,6 +20,9 @@ class Dobj(object):
                 setattr(self, k, Dobj(v) if isinstance(v, dict) else v)
     def __repr__(self):
         return repr(self.__dict__)
+    @property
+    def is_have(self):
+        return bool(self.__dict__)
 
 def s2b(str):   #字符串转bool
     return True if str.lower() in ('true','1') else False
@@ -70,5 +73,7 @@ def get_cfg(cfg_file_path,get_obj=True):
     for sec,odic in cfg._sections.items():   #其它节点解析
         result[sec]=odic_clean(odic)
     if get_obj:
-        return Dobj(result)
+        o=Dobj(result)
+        assert o.is_have,f'配置文件 {cfg_file_path} 错误或无配置文件！'
+        return o
     return result
