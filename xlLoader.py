@@ -85,7 +85,7 @@ def worksheet_handle(sheet,cfg):
                     types[c]=get_type_pre(v,cfg)
                     cv=v
                 else:
-                    cv=clean_cell_data(sheet.cell(r,c),types[c])    #Cell对象数据清洗并保存为实际类型
+                    cv=clean_cell_data(sheet.cell(r,c),types[c],cfg)    #Cell对象数据清洗并保存为实际类型
                     if cv==None:print(f'<FILE>{FILENAME} <SHEET>{SHEETNAME} <ROW>{ROW+1} <COLUMN>{COLUMN+1}:Value Error!')
                 this_row.append(cv)
         if this_row:
@@ -131,7 +131,7 @@ def get_type_pre(val,cfg):
         if val.startswith(pre):return i
     return 2    #特殊情况均视为str
     
-def clean_cell_data(cell,type_value):
+def clean_cell_data(cell,type_value,cfg):
     '''
     Get a python type variable,from Excel-Cell-Object in xlrd.
         ctype0-empty str
@@ -150,9 +150,12 @@ def clean_cell_data(cell,type_value):
         4-list
         5-dict
         6-boolean
+    @param cfg: global config.
     @return: exact type of data.
     '''
     t=cell.ctype
+    if cfg.remove_blank_params and t in (0,6):
+        return None
     if t==0 or not cell.value:    #空，或Excel中残留的'型单元格等情况
         if type_value==2 and cell.ctype:    #2018/9/11需求字符串且填写数字0用作键的情况
             return clean_string(cell)

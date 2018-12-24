@@ -64,10 +64,7 @@ def convertion_0(oridata,cfg):
     for item in listdata:
         subdic={}
         for i in range(1,len(item)):
-            if cfg.allow_inner_note and \
-                isinstance(item[i],str) and \
-                item[i].startswith( cfg.note_signs ):
-                    continue  #自定义不输出某key的某些字段
+            if __is_continue(i,item,cfg):continue
             if cfg.keep_var_type:
                 subdic[ pro_names[i] ]=item[i]
             else:
@@ -117,10 +114,7 @@ def convertion_1(oridata,cfg,**kw):
     for item in listdata:
         subdic={}
         for i in range(0,len(item)):
-            if bool(cfg.allow_inner_note) and \
-                isinstance(item[i],str) and \
-                item[i].startswith( cfg.note_signs ):
-                    continue  #自定义不输出某key的某些字段        
+            if __is_continue(i,item,cfg):continue     
             if cfg.keep_var_type:
                 subdic[ pro_names[i] ]=item[i]
             else:
@@ -128,6 +122,18 @@ def convertion_1(oridata,cfg,**kw):
                 subdic[ pro_names[i][pre_len:] ]=item[i]
         result.append(subdic)
     return result
+
+def __is_continue(i,item,cfg):
+    #不输出所有空数据
+    if cfg.remove_blank_params and \
+        item[i]==None:
+            return True
+    #行内注释，不输出某key的某些字段
+    if cfg.allow_inner_note and \
+        isinstance(item[i],str) and \
+        item[i].startswith( cfg.note_signs ):
+            return True
+    return False
     
 def convert(raw_data,cfg):
     if cfg.output_type==1:return raw_data   #输出md文件使用原格式
