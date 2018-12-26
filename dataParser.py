@@ -10,6 +10,7 @@ def json_output(fn,data,cfg):
     output json file.
     @param fn: full file path.
     @param data: json data.
+    @param cfg: global config.
     '''
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         jsonstr=json.dumps(
@@ -27,6 +28,7 @@ def md_output(fn,data,cfg):
     output markdown file.
     @param fn: full file path.
     @param data: markdown data.
+    @param cfg: global config.
     '''    
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         column_num=len(data[0])
@@ -38,6 +40,23 @@ def md_output(fn,data,cfg):
             if i==0:f.write( '|:--'*column_num + '|\n' )   #输出表分割符
     print('<%s> Done!' % fn)
     
+def pickle_output(fn,data,cfg):
+    '''
+    output pickle file.
+    get config:
+        with open(fn,'rb') as f:
+            cfg=pickle.load(f)
+    @param fn: full file path.
+    @param data: pickle data.    
+    @param cfg: global config.
+    '''
+    import pickle
+    with open(os.path.normpath(fn),'wb') as f:
+        p_str=pickle.dumps(data)
+        f.write(p_str)
+    print('<%s> Done!' % fn)
+    
+    
 def parse(data,cfg):
     if not os.path.exists(cfg.output_dir):
         os.makedirs(cfg.output_dir)
@@ -45,11 +64,14 @@ def parse(data,cfg):
     myparser={
                 0:json_output,
                 1:md_output,
+                2:pickle_output,
                 }[cfg.output_type]
     myext={
             0:'json',
             1:'md',
+            2:'data',
             }[cfg.output_type]
+    if cfg.output_ext:myext=cfg.output_ext
     if cfg.output_in_one:
         fn=os.path.join(cfg.output_dir,cfg.output_in_one_fn)
         fn=os.path.abspath(fn)
