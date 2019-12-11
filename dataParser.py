@@ -50,10 +50,12 @@ def pickle_output(fn,data,cfg):
     @param data: pickle data.    
     @param cfg: global config.
     '''
-    import pickle
+    try:
+        import cPickle as pickle
+    except ImportError:
+        import pickle
     with open(os.path.normpath(fn),'wb') as f:
-        p_str=pickle.dumps(data)
-        f.write(p_str)
+        pickle.dump(data,f,protocol=cfg.pickle_protocol)
     print('<%s> Done!' % fn)
     
     
