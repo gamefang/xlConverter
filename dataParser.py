@@ -4,6 +4,7 @@
 import os
 import codecs
 import json
+import re
 
 def json_output(fn,data,cfg):
     '''
@@ -58,6 +59,38 @@ def pickle_output(fn,data,cfg):
         pickle.dump(data,f,protocol=cfg.pickle_protocol)
     print('<%s> Done!' % fn)
     
+def lua_output(fn,data,cfg):
+    '''
+    output lua table file.
+    @param fn: full file path.
+    @param data: lua table data.
+    @param cfg: global config.
+    '''    
+    with codecs.open(os.path.normpath(fn),'w','utf8') as f:
+        jsonstr=json.dumps(
+                            data,
+                            ensure_ascii=False,
+                            indent=cfg.json_indent,
+                            separators=eval(cfg.json_separators),
+                            )
+        jsonstr=jsonstr.replace(r'\\n',r'\n')   #2018/9/6 解决转义字符多次转义错误
+        # 从json数据转为lua表
+        luastr = jsonstr.replace('[','{')
+        luastr = luastr.replace(']','}')
+        key_pattern = re.compile(r'"[^,]*?:')   # 找出key替换
+        tmplist = key_pattern.findall(luastr)
+        newlist = []
+        for s in tmplist:
+            s_clean = s.replace('"','').replace(':','')
+            if s_clean.isdigit():   # 数值key去掉引号
+                newlist.append(f'[{s_clean}] =')
+            else:
+                newlist.append(f'["{s_clean}"] =')
+        for i in range(len(tmplist)):
+            luastr = luastr.replace(tmplist[i],newlist[i])
+    
+        f.write(luastr)
+    print('<%s> Done!' % fn)
     
 def parse(data,cfg):
     if not os.path.exists(cfg.output_dir):
@@ -67,11 +100,13 @@ def parse(data,cfg):
                 0:json_output,
                 1:md_output,
                 2:pickle_output,
+                3:lua_output,
                 }[cfg.output_type]
     myext={
             0:'json',
             1:'md',
             2:'data',
+            3:'lua',
             }[cfg.output_type]
     if cfg.output_ext:myext=cfg.output_ext
     if cfg.output_in_one:
