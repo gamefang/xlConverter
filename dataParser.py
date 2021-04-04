@@ -88,10 +88,20 @@ def lua_output(fn,data,cfg):
                 newlist.append(f'["{s_clean}"] =')
         for i in range(len(tmplist)):
             luastr = luastr.replace(tmplist[i],newlist[i])
-    
-        f.write(luastr)
+        name = get_sheetname(fn)
+        f.write(f'tb_{name} = {luastr}\nreturn tb_{name}')
     print('<%s> Done!' % fn)
     
+def get_sheetname(fn):
+   '''
+   根据文件路径获取文件名字符串
+   @param fn: 完整文件路径
+   @return: 文件名字符串
+   '''
+   fnext = os.path.basename(fn)
+   li = fnext.split('.')
+   return li[0]
+   
 def parse(data,cfg):
     if not os.path.exists(cfg.output_dir):
         os.makedirs(cfg.output_dir)
