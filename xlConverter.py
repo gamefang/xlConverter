@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # python3.7+
 
-version='1.4.5'
+version='1.4.6'
 __author__='gamefang'
 
 CFG_FILE_PATH='xlConverter.ini'

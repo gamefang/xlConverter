@@ -1,5 +1,10 @@
 # xlConverter
 
+```sh
+# REQUIRE: xlrd
+pip install xlrd
+```
+
 - convert xls/xlsx to other data.
 - custom any of file,sheet,area,row,column... , to be converted or not.
 - various data types, include json and md etc.
@@ -211,3 +216,5 @@
 	2020/1/20 更新打包方式，添加图标绕过万恶的360
 - version1.4.5
     2021/3/29 添加可导出lua table的格式
+- version1.4.6
+	2021/11/25 添加可导出csv的格式

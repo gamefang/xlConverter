@@ -92,6 +92,23 @@ def lua_output(fn,data,cfg):
         f.write(f'tb_{name} = {luastr}\nreturn tb_{name}')
     print('<%s> Done!' % fn)
     
+def csv_output(fn,data,cfg):
+    '''
+    output csv file.
+    @param fn: full file path.
+    @param data: csv data.
+    @param cfg: global config.
+    '''
+    sep = cfg.csv_separator
+    with codecs.open(os.path.normpath(fn),'w','utf8') as f:
+        column_num=len(data[0])
+        for i,entire_row in enumerate(data):
+            output_row=''
+            for item in entire_row:
+                output_row += str(item) + sep
+            f.write( output_row[:-1] + '\n' )
+    print('<%s> Done!' % fn)
+    
 def get_sheetname(fn):
    '''
    根据文件路径获取文件名字符串
@@ -111,12 +128,14 @@ def parse(data,cfg):
                 1:md_output,
                 2:pickle_output,
                 3:lua_output,
+                4:csv_output,
                 }[cfg.output_type]
     myext={
             0:'json',
             1:'md',
             2:'data',
             3:'lua',
+            4:'csv',
             }[cfg.output_type]
     if cfg.output_ext:myext=cfg.output_ext
     if cfg.output_in_one:

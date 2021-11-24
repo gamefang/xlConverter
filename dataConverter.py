@@ -136,7 +136,7 @@ def __is_continue(i,item,cfg):
     return False
     
 def convert(raw_data,cfg):
-    if cfg.output_type==1:return raw_data   #输出md文件使用原格式
+    if cfg.output_type in (1,4):return raw_data   #输出md或csv文件使用原格式
     if not cfg.convert_style:
         data={
             k[:]:convertion_0(v,cfg)
