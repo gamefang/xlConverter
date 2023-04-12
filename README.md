@@ -218,3 +218,5 @@ pip install xlrd
     2021/3/29 添加可导出lua table的格式
 - version1.4.6
 	2021/11/25 添加可导出csv的格式
+- version1.4.7
+	2023/4/13 优化lua导出模板设置，调整安装包依赖

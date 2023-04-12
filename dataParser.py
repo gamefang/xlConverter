@@ -89,7 +89,7 @@ def lua_output(fn,data,cfg):
         for i in range(len(tmplist)):
             luastr = luastr.replace(tmplist[i],newlist[i])
         name = get_sheetname(fn)
-        f.write(f'tb_{name} = {luastr}\nreturn tb_{name}')
+        f.write(f'{cfg.lua_template.format(name=name, luastr=luastr)}')
     print('<%s> Done!' % fn)
     
 def csv_output(fn,data,cfg):
