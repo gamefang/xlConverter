@@ -65,31 +65,29 @@ def lua_output(fn,data,cfg):
     @param fn: full file path.
     @param data: lua table data.
     @param cfg: global config.
-    '''    
+    '''
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
-        jsonstr=json.dumps(
-                            data,
-                            ensure_ascii=False,
-                            indent=cfg.json_indent,
-                            separators=eval(cfg.json_separators),
-                            )
-        jsonstr=jsonstr.replace(r'\\n',r'\n')   #2018/9/6 解决转义字符多次转义错误
-        # 从json数据转为lua表
-        luastr = jsonstr.replace('[','{')
-        luastr = luastr.replace(']','}')
-        key_pattern = re.compile(r'"[^,]*?:')   # 找出key替换
-        tmplist = key_pattern.findall(luastr)
-        newlist = []
-        for s in tmplist:
-            s_clean = s.replace('"','').replace(':','')
-            if s_clean.isdigit():   # 数值key去掉引号
-                newlist.append(f'[{s_clean}] =')
+        lua_table = "{\n"
+        for key, value in data.items():
+            if isinstance(key, int):
+                lua_table += f'    [{key}] = '
             else:
-                newlist.append(f'["{s_clean}"] =')
-        for i in range(len(tmplist)):
-            luastr = luastr.replace(tmplist[i],newlist[i])
+                lua_table += f'    ["{key}"] = '
+            if isinstance(value, dict):
+                lua_table += '{\n'
+                for k, v in value.items():
+                    if isinstance(v, str):
+                        lua_table += f'        ["{k}"] = "{v}",\n'
+                    else:
+                        lua_table += f'        ["{k}"] = {json.dumps(v)},\n'
+                lua_table += '    },\n'
+            elif isinstance(value, str):
+                lua_table += f'{{ text = "{value}" }},\n'
+            else:
+                lua_table += f'{json.dumps(value)},\n'
+        lua_table += "}"
         name = get_sheetname(fn)
-        f.write(f'{cfg.lua_template.format(name=name, luastr=luastr)}')
+        f.write(f'{cfg.lua_template.format(name=name, luastr=lua_table)}')
     print('<%s> Done!' % fn)
     
 def csv_output(fn,data,cfg):
