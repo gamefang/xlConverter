@@ -128,7 +128,7 @@ def get_sheetname(fn):
    li = fnext.split('.')
    return li[0]
    
-def parse(data,cfg):
+def parse(data,cfg,table_info):
     if not os.path.exists(cfg.output_dir):
         os.makedirs(cfg.output_dir)
         print(f'{cfg.output_dir}:输出文件夹不存在，已自动创建！')
@@ -156,3 +156,71 @@ def parse(data,cfg):
             fn=os.path.join(cfg.output_dir,f'{k}.{myext}')
             fn=os.path.abspath(fn)
             myparser(fn,v,cfg)
+            if cfg.cs_class_gen:    # 额外输出cs类
+                cs_class_gen(fn,v,cfg,table_info)
+
+def cs_class_gen(fn,data,cfg,table_info):
+    '''
+    生成unity使用的类定义
+    '''
+    # 确定sheet名
+    sheet_name = get_sheetname(fn)
+    infos = table_info[sheet_name]
+    # 确定key类型
+    key_type = cfg.cs_type_name[infos["key"]]
+    # 确定参数列表
+    params_list = list(infos.keys())[1:] 
+    # 确定参数数据类型
+    param_type_names = [cfg.cs_type_name[item] for item in list(infos.values())[1:]]
+    
+    # 文本生成
+    result = '''// xlConverter自动生成的脚本
+using gamefang;
+
+public class Data''' + sheet_name.capitalize()
+    result += '''
+{
+    public ''' + key_type + ''' key {get;}'''
+    for num,param_name in enumerate(params_list):
+        result += '''
+    public ''' + param_type_names[num] + ''' ''' + param_name + ''' {get;}'''
+    result += '''
+
+    public Data''' + sheet_name.capitalize() + '''(''' + key_type + ''' key)
+    {
+        this.key = key;'''
+    for num,param_name in enumerate(params_list):
+        result += '''
+        this.''' + param_name + ''' = ConfigManager.GetData<''' + param_type_names[num] + '''>("''' + sheet_name + '''",key,"''' + param_name + '''");'''
+    result += '''
+    }
+
+}
+'''
+
+    fn = os.path.join(cfg.cs_output_dir, f'Data{sheet_name.capitalize()}.cs')
+    with codecs.open(os.path.normpath(fn),'w','utf8') as f:
+        f.write(result)
+    print(f'cs gen: <{fn}>')
+    
+
+# 示例
+'''
+// xlConverter自动生成的脚本
+using gamefang;
+
+public class DataMelody
+{
+    public int key {get;}
+    public bool artpiece {get;}
+    public float time {get;}
+
+    public DataMelody(int key)
+    {
+        this.key = key;
+        this.artpiece = ConfigManager.GetData<bool>("melody",key,"artpiece");
+        this.time = ConfigManager.GetData<float>("melody",key,"time");
+    }
+
+}
+'''

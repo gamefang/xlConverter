@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # python3.7+
 
-version='1.4.7'
+version='1.4.8'
 __author__='gamefang'
 
 CFG_FILE_PATH='xlConverter.ini'
@@ -66,10 +66,12 @@ def main():
     if cfg.read_me_mode:show_readme()
     #excel原始数据导入
     raw_data=xlLoader.get_data(cfg)
+    #信息提取
+    table_info=xlLoader.get_table_info(raw_data,cfg)
     #数据转化
     data=dataConverter.convert(raw_data,cfg)
     #输出
-    dataParser.parse(data,cfg)
+    dataParser.parse(data,cfg,table_info)
 
 if __name__ == '__main__':
     main()

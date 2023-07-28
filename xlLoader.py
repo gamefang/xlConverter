@@ -89,6 +89,9 @@ def worksheet_handle(sheet,cfg):
                 this_row.append(cv)
         if this_row:
             this_data.append(this_row)
+    # 存储参数数据类型
+    param_types = list(types.values())
+    this_data[0] += param_types
     return this_data   #装入公用数据字典
 
 def get_sheet_bounds(sheet,cfg):
@@ -232,3 +235,18 @@ def get_data(cfg):
         FILENAME=fn
         raw_data.update(workbook_handle(fn,cfg))
     return raw_data
+    
+def get_table_info(raw_data,cfg):
+    info_dic = {}
+    for k,v in raw_data.items():
+        param_info = []
+        for item in v[0]:
+            if isinstance(item,str):
+                prefix_len = 2  # TODO 暂时未找到算法，写死2
+                param_info.append(item[prefix_len:])
+            else:
+                param_info.append(item)
+        half_length = len(param_info) // 2
+        param_dic = {param_info[i]: param_info[i + half_length] for i in range(half_length)}
+        info_dic[k] = param_dic
+    return info_dic
