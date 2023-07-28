@@ -78,6 +78,17 @@ def lua_output(fn,data,cfg):
                 for k, v in value.items():
                     if isinstance(v, str):
                         lua_table += f'        ["{k}"] = "{v}",\n'
+                    elif isinstance(v, list):   # 表格中嵌套list，字符串数值混用需加""
+                        lua_str = '{'
+                        for num,item in enumerate(v):
+                            if isinstance(item, str):
+                                lua_str += f'{item}'
+                            else:
+                                lua_str += str(item)
+                            if num != len(v) - 1:
+                                lua_str += ','
+                        lua_str += '}'
+                        lua_table += f'        ["{k}"] = {lua_str},\n'
                     else:
                         lua_table += f'        ["{k}"] = {json.dumps(v)},\n'
                 lua_table += '    },\n'
