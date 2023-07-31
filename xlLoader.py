@@ -169,6 +169,10 @@ def clean_cell_data(cell,type_value,cfg):
             4:[],   #normal array
             5:{},   #object
             6:False,    #bool
+            7:[],   # int array
+            8:[],   # float array
+            9:[],   # string array
+            10:[],   # bool array
             }.get(type_value,str(cell.value))
     elif t in [1,2]:    #文本和数字，特殊处理
         return clean_dic[type_value](cell)
@@ -206,6 +210,7 @@ def clean_string(cell):
 @d_clean_array
 def clean_strarray(cell):
     return str(cell.value).split(',')
+@d_clean_array
 def clean_array(cell):
     if cell.ctype==1:
         return eval( '[%s,]' % str(cell.value) )
@@ -218,6 +223,24 @@ def clean_bool(cell):
     if cell.ctype==1:
         return str(cell.value) in ('True','TRUE','true','t','T','1')
     return bool(cell.value)
+@d_clean_array
+def clean_ints(cell):
+    if cell.ctype in (2,4):
+        return eval( '[%s,]' % int(cell.value))
+    else:
+        return [int(item) for item in clean_strarray(cell)]
+@d_clean_array
+def clean_floats(cell):
+    if cell.ctype in (2,4):
+        return eval( '[%s,]' % float('%.8f' % cell.value))
+    else:
+        return [float('%.8f' % item) for item in clean_strarray(cell)]
+@d_clean_array
+def clean_strings(cell):
+    return str(cell.value).split(',')
+@d_clean_array
+def clean_bools(cell):
+    return [bool(item in ('True','TRUE','true','t','T','1')) for item in clean_strarray(cell)]
 clean_dic={
         0:clean_int,
         1:clean_float,
@@ -226,6 +249,10 @@ clean_dic={
         4:clean_array,
         5:clean_object,
         6:clean_bool,
+        7:clean_ints,
+        8:clean_floats,
+        9:clean_string,
+        10:clean_bools,
         }
         
 def get_data(cfg):

@@ -223,3 +223,4 @@ pip install xlrd
 	2023/4/20 重写lua table导出方式，可匹配特殊字符
 - version1.4.8
 	2023/7/28 lua table导出列表嵌套优化，可自动导出unity的cs类
+	2023/7/31 添加cs类支持的数据类型
