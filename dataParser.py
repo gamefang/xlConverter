@@ -4,7 +4,7 @@
 import os
 import codecs
 import json
-import re
+from datetime import datetime
 
 def json_output(fn,data,cfg):
     '''
@@ -13,6 +13,8 @@ def json_output(fn,data,cfg):
     @param data: json data.
     @param cfg: global config.
     '''
+    if cfg.json_wrapper_name != "":
+        data = {cfg.json_wrapper_name : data}
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         jsonstr=json.dumps(
                             data,
@@ -173,43 +175,68 @@ def cs_class_gen(fn,data,cfg,table_info):
     # 确定参数数据类型
     param_type_names = [cfg.cs_type_name[item] for item in list(infos.values())[1:]]
     
-    # 文本生成
-    result = '''// xlConverter自动生成的脚本
-using gamefang;
+    # 文本生成 Start
+    result = '''// xlConverter自动生成的脚本: ''' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''
+using System;
+using System.Collections.Generic;
 
-public class Data''' + sheet_name.capitalize()
-    result += '''
+namespace gamefang
 {
-    public ''' + key_type + ''' key {get;}'''
+    [Serializable]
+    public class Conf''' + sheet_name.capitalize()
+    result += '''
+    {
+        public ''' + key_type + ''' key;'''
     for num,param_name in enumerate(params_list):
         result += '''
-    public ''' + param_type_names[num] + ''' ''' + param_name + ''' {get;}'''
+        public ''' + param_type_names[num] + ''' ''' + param_name + ''';'''
     result += '''
 
-    public Data''' + sheet_name.capitalize() + '''(''' + key_type + ''' key)
-    {
-        this.key = key;'''
+        public Conf''' + sheet_name.capitalize() + '''(''' + key_type + ''' key)
+        {
+            this.key = key;
+            if (ConfigManager.GetTable("''' + sheet_name + '''") is not Conf''' + sheet_name.capitalize() + '''List list_conf)
+                return;
+            foreach (var item in list_conf.data)
+            {
+                if (item.key == key)
+                {'''
     for num,param_name in enumerate(params_list):
         result += '''
-        this.''' + param_name + ''' = ConfigManager.GetData<''' + param_type_names[num] + '''>("''' + sheet_name + '''",key,"''' + param_name + '''");'''
+                    this.''' + param_name + ''' = item.''' + param_name + ''';'''
     result += '''
+                    return;
+                }
+            }
+        }
     }
 
-}
-'''
+    [Serializable]
+    public class Conf''' + sheet_name.capitalize() + '''List : IConfList
+    {
+        public List<Conf''' + sheet_name.capitalize() + '''> data;
 
-    fn = os.path.join(cfg.cs_output_dir, f'Data{sheet_name.capitalize()}.cs')
+        public object GetList()
+        {
+            return data;
+        }
+    }
+}'''
+    fn = os.path.join(cfg.cs_output_dir, f'Conf{sheet_name.capitalize()}.cs')
+    # 文本生成 End
+
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         f.write(result)
     print(f'cs gen: <{fn}>')
-    
 
-# 示例
+
+# ------------------------------------------------------
+# 模板1
 '''
 // xlConverter自动生成的脚本
 using gamefang;
 
-public class DataMelody
+public partial class DataMelody
 {
     public int key {get;}
     public bool artpiece {get;}
@@ -224,3 +251,133 @@ public class DataMelody
 
 }
 '''
+# 模板1文本生成代码
+#     # 文本生成 Start
+#     result = '''// xlConverter自动生成的脚本: ''' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''
+# using gamefang;
+
+# public partial class Data''' + sheet_name.capitalize()
+#     result += '''
+# {
+#     public ''' + key_type + ''' key {get;}'''
+#     for num,param_name in enumerate(params_list):
+#         result += '''
+#     public ''' + param_type_names[num] + ''' ''' + param_name + ''' {get;}'''
+#     result += '''
+
+#     public Data''' + sheet_name.capitalize() + '''(''' + key_type + ''' key)
+#     {
+#         this.key = key;'''
+#     for num,param_name in enumerate(params_list):
+#         result += '''
+#         this.''' + param_name + ''' = ConfigManager.GetData<''' + param_type_names[num] + '''>("''' + sheet_name + '''",key,"''' + param_name + '''");'''
+#     result += '''
+#     }
+
+# }
+# '''
+#     fn = os.path.join(cfg.cs_output_dir, f'Data{sheet_name.capitalize()}.cs')
+#     # 文本生成 End
+
+# ------------------------------------------------------
+# 模板2
+'''
+// xlConverter自动生成的脚本
+using System;
+using System.Collections.Generic;
+
+namespace gamefang
+{
+    [Serializable]
+    public class ConfItem
+    {
+        public int key;
+        public string name;
+        public string icon;
+        public bool onlyone;
+        public int tool;
+        public string prefab;
+
+        public ConfItem(int key)
+        {
+            this.key = key;
+            if (ConfigManager.GetTable("item") is not ConfItemList list_conf)
+                return;
+            foreach (var item in list_conf.data)
+            {
+                if (item.key == key)
+                {
+                    this.name = item.name;
+                    this.icon = item.icon;
+                    this.onlyone = item.onlyone;
+                    this.tool = item.tool;
+                    this.prefab = item.prefab;
+                    return;
+                }
+            }
+        }
+    }
+
+    [Serializable]
+    public class ConfItemList : IConfList
+    {
+        public List<ConfItem> data;
+
+        public object GetList()
+        {
+            return data;
+        }
+    }
+}
+
+'''
+# 模板2文本生成代码
+#     # 文本生成 Start
+#     result = '''// xlConverter自动生成的脚本: ''' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''
+# using System;
+# using System.Collections.Generic;
+
+# namespace gamefang
+# {
+#     [Serializable]
+#     public class Conf''' + sheet_name.capitalize()
+#     result += '''
+#     {
+#         public ''' + key_type + ''' key;'''
+#     for num,param_name in enumerate(params_list):
+#         result += '''
+#         public ''' + param_type_names[num] + ''' ''' + param_name + ''';'''
+#     result += '''
+
+#         public Conf''' + sheet_name.capitalize() + '''(''' + key_type + ''' key)
+#         {
+#             this.key = key;
+#             if (ConfigManager.GetTable("''' + sheet_name + '''") is not Conf''' + sheet_name.capitalize() + '''List list_conf)
+#                 return;
+#             foreach (var item in list_conf.data)
+#             {
+#                 if (item.key == key)
+#                 {'''
+#     for num,param_name in enumerate(params_list):
+#         result += '''
+#                         this.''' + param_name + ''' = item.''' + param_name + ''';'''
+#     result += '''
+#                     return;
+#                 }
+#             }
+#         }
+#     }
+
+#     [Serializable]
+#     public class Conf''' + sheet_name.capitalize() + '''List : IConfList
+#     {
+#         public List<Conf''' + sheet_name.capitalize() + '''> data;
+
+#         public object GetList()
+#         {
+#             return data;
+#         }
+#     }
+# }'''
+#     fn = os.path.join(cfg.cs_output_dir, f'Conf{sheet_name.capitalize()}.cs')
+#     # 文本生成 End

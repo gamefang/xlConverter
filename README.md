@@ -224,3 +224,5 @@ pip install xlrd
 - version1.4.8
 	2023/7/28 lua table导出列表嵌套优化，可自动导出unity的cs类
 	2023/7/31 添加cs类支持的数据类型
+- version1.4.9
+	2024/11/12 添加cs类的另一种模板，json输出可再嵌套一层的配置
