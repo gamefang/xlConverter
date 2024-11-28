@@ -176,7 +176,7 @@ def cs_class_gen(fn,data,cfg,table_info):
     param_type_names = [cfg.cs_type_name[item] for item in list(infos.values())[1:]]
     
     # 文本生成 Start
-    result = '''// xlConverter自动生成的脚本: ''' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''
+    result = '''// xlConverter自动生成的脚本
 using System;
 using System.Collections.Generic;
 
@@ -209,10 +209,20 @@ namespace gamefang
                 }
             }
         }
+
+        public static List<''' + key_type + '''> list_keys{get{
+            List<''' + key_type + '''> result = new();
+            var table = ConfigManager.GetTable("'''
+    result += sheet_name + '''") as Conf''' + sheet_name.capitalize() + '''List;
+            foreach (var conf in table.data)
+                result.Add(conf.key);
+            return result;
+        }''' + '''}
     }
 
     [Serializable]
-    public class Conf''' + sheet_name.capitalize() + '''List : IConfList
+    public class Conf'''
+    result += sheet_name.capitalize() + '''List : IConfList
     {
         public List<Conf''' + sheet_name.capitalize() + '''> data;
 
@@ -228,6 +238,35 @@ namespace gamefang
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         f.write(result)
     print(f'cs gen: <{fn}>')
+
+    # 一次性文件
+    fn2 = fn.replace('/Config', '/Data').replace(f'Conf{sheet_name.capitalize()}.cs', f'Data{sheet_name.capitalize()}.cs')
+    result2 = f'''using gamefang;
+
+namespace gu
+{{
+    public class Data{sheet_name.capitalize()} : Conf{sheet_name.capitalize()}
+    {{
+        // 存檔數據
+
+        // 擴展數據
+
+        // 構造函數
+        public Data{sheet_name.capitalize()}({key_type} key) : base(key)
+        {{
+        }}
+    }}
+}}'''
+
+    # 寫入一次性文件
+    if not os.path.exists(fn2):
+        with codecs.open(os.path.normpath(fn2), 'w', 'utf8') as f:
+            f.write(result2)
+            print(f'cs gen: <{fn2}>')
+
+
+
+
 
 
 # ------------------------------------------------------
@@ -289,39 +328,53 @@ using System.Collections.Generic;
 namespace gamefang
 {
     [Serializable]
-    public class ConfItem
+    public class ConfQuest
     {
         public int key;
         public string name;
-        public string icon;
-        public bool onlyone;
-        public int tool;
-        public string prefab;
+        public string tip;
+        public string con;
+        public bool repeatable;
+        public string reward;
+        public int[] show_reward;
+        public int[] item_need;
+        public bool cost_item;
 
-        public ConfItem(int key)
+        public ConfQuest(int key)
         {
             this.key = key;
-            if (ConfigManager.GetTable("item") is not ConfItemList list_conf)
+            if (ConfigManager.GetTable("quest") is not ConfQuestList list_conf)
                 return;
             foreach (var item in list_conf.data)
             {
                 if (item.key == key)
                 {
                     this.name = item.name;
-                    this.icon = item.icon;
-                    this.onlyone = item.onlyone;
-                    this.tool = item.tool;
-                    this.prefab = item.prefab;
+                    this.tip = item.tip;
+                    this.con = item.con;
+                    this.repeatable = item.repeatable;
+                    this.reward = item.reward;
+                    this.show_reward = item.show_reward;
+                    this.item_need = item.item_need;
+                    this.cost_item = item.cost_item;
                     return;
                 }
             }
         }
+
+        public static List<int> list_keys{get{
+            List<int> result = new();
+            var table = ConfigManager.GetTable("quest") as ConfQuestList;
+            foreach (var conf in table.data)
+                result.Add(conf.key);
+            return result;
+        }}
     }
 
     [Serializable]
-    public class ConfItemList : IConfList
+    public class ConfQuestList : IConfList
     {
-        public List<ConfItem> data;
+        public List<ConfQuest> data;
 
         public object GetList()
         {
@@ -333,7 +386,7 @@ namespace gamefang
 '''
 # 模板2文本生成代码
 #     # 文本生成 Start
-#     result = '''// xlConverter自动生成的脚本: ''' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''
+#     result = '''// xlConverter自动生成的脚本
 # using System;
 # using System.Collections.Generic;
 
@@ -360,16 +413,26 @@ namespace gamefang
 #                 {'''
 #     for num,param_name in enumerate(params_list):
 #         result += '''
-#                         this.''' + param_name + ''' = item.''' + param_name + ''';'''
+#                     this.''' + param_name + ''' = item.''' + param_name + ''';'''
 #     result += '''
 #                     return;
 #                 }
 #             }
 #         }
+
+#         public static List<''' + key_type + '''> list_keys{get{
+#             List<''' + key_type + '''> result = new();
+#             var table = ConfigManager.GetTable("'''
+#     result += sheet_name + '''") as Conf''' + sheet_name.capitalize() + '''List;
+#             foreach (var conf in table.data)
+#                 result.Add(conf.key);
+#             return result;
+#         }''' + '''}
 #     }
 
 #     [Serializable]
-#     public class Conf''' + sheet_name.capitalize() + '''List : IConfList
+#     public class Conf'''
+#     result += sheet_name.capitalize() + '''List : IConfList
 #     {
 #         public List<Conf''' + sheet_name.capitalize() + '''> data;
 
@@ -381,3 +444,21 @@ namespace gamefang
 # }'''
 #     fn = os.path.join(cfg.cs_output_dir, f'Conf{sheet_name.capitalize()}.cs')
 #     # 文本生成 End
+
+# 模版2額外模版
+# using gamefang;
+
+# namespace gu
+# {
+#     public class DataMsg : ConfMsg
+#     {
+#         // 存檔數據
+
+#         // 擴展數據
+
+#         // 構造函數
+#         public DataMsg(string key) : base(key)
+#         {
+#         }
+#     }
+# }
