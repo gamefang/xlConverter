@@ -235,6 +235,7 @@ namespace gamefang
     fn = os.path.join(cfg.cs_output_dir, f'Conf{sheet_name.capitalize()}.cs')
     # 文本生成 End
 
+    os.makedirs(os.path.dirname(fn), exist_ok=True)
     with codecs.open(os.path.normpath(fn),'w','utf8') as f:
         f.write(result)
     print(f'cs gen: <{fn}>')
@@ -260,6 +261,7 @@ namespace gu
 
     # 寫入一次性文件
     if not os.path.exists(fn2):
+        os.makedirs(os.path.dirname(fn2), exist_ok=True)
         with codecs.open(os.path.normpath(fn2), 'w', 'utf8') as f:
             f.write(result2)
             print(f'cs gen: <{fn2}>')
