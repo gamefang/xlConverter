@@ -210,6 +210,8 @@ namespace gamefang
             }
         }
 
+        public override string ToString() => $"{GetType().Name}_{key}";
+
         public static List<''' + key_type + '''> list_keys{get{
             List<''' + key_type + '''> result = new();
             var table = ConfigManager.GetTable("'''
@@ -244,7 +246,7 @@ namespace gamefang
     fn2 = fn.replace('/Config', '/Data').replace(f'Conf{sheet_name.capitalize()}.cs', f'Data{sheet_name.capitalize()}.cs')
     result2 = f'''using gamefang;
 
-namespace gu
+namespace pan
 {{
     public class Data{sheet_name.capitalize()} : Conf{sheet_name.capitalize()}
     {{
@@ -363,6 +365,8 @@ namespace gamefang
                 }
             }
         }
+        
+        public override string ToString() => $"{GetType().Name}_{key}";
 
         public static List<int> list_keys{get{
             List<int> result = new();
@@ -450,7 +454,7 @@ namespace gamefang
 # 模版2額外模版
 # using gamefang;
 
-# namespace gu
+# namespace pan
 # {
 #     public class DataMsg : ConfMsg
 #     {
