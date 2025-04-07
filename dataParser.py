@@ -209,7 +209,20 @@ namespace gamefang
                 }
             }
         }
-
+'''
+    has_local_param = False
+    for param_name in params_list:
+        if param_name.startswith('_'):
+            if not has_local_param:
+                has_local_param = True
+                result += '''
+        // 本地化'''
+            use_param_name = param_name[1:]
+            result += '''
+        public string ''' + use_param_name + '''{get => LocalSys.Get(''' + param_name + ''');}'''
+    if has_local_param:
+        result += '\n'
+    result += '''
         public override string ToString() => $"{GetType().Name}_{key}";
 
         public static List<''' + key_type + '''> list_keys{get{
@@ -274,7 +287,7 @@ namespace pan
 
 
 # ------------------------------------------------------
-# 模板1
+# 模板1（暫時不用）
 '''
 // xlConverter自动生成的脚本
 using gamefang;
@@ -332,45 +345,73 @@ using System.Collections.Generic;
 namespace gamefang
 {
     [Serializable]
-    public class ConfQuest
+    public class ConfItem
     {
         public int key;
-        public string name;
-        public string tip;
-        public string con;
-        public bool repeatable;
+        public string _name;
+        public string _tip;
+        public string _functip;
+        public int func;
+        public string icon;
+        public int typ;
+        public bool onlyone;
+        public int init_durability;
+        public int buy_value;
+        public int sell_value;
+        public int value_rng;
+        public int max_count;
+        public int tick_min;
+        public int tick_event;
+        public string _event_str;
+        public int intv;
+        public string strv;
         public string reward;
-        public int[] show_reward;
-        public int[] item_need;
-        public bool cost_item;
+        public string use_se;
 
-        public ConfQuest(int key)
+        public ConfItem(int key)
         {
             this.key = key;
-            if (ConfigManager.GetTable("quest") is not ConfQuestList list_conf)
+            if (ConfigManager.GetTable("item") is not ConfItemList list_conf)
                 return;
             foreach (var item in list_conf.data)
             {
                 if (item.key == key)
                 {
-                    this.name = item.name;
-                    this.tip = item.tip;
-                    this.con = item.con;
-                    this.repeatable = item.repeatable;
+                    this._name = item._name;
+                    this._tip = item._tip;
+                    this._functip = item._functip;
+                    this.func = item.func;
+                    this.icon = item.icon;
+                    this.typ = item.typ;
+                    this.onlyone = item.onlyone;
+                    this.init_durability = item.init_durability;
+                    this.buy_value = item.buy_value;
+                    this.sell_value = item.sell_value;
+                    this.value_rng = item.value_rng;
+                    this.max_count = item.max_count;
+                    this.tick_min = item.tick_min;
+                    this.tick_event = item.tick_event;
+                    this._event_str = item._event_str;
+                    this.intv = item.intv;
+                    this.strv = item.strv;
                     this.reward = item.reward;
-                    this.show_reward = item.show_reward;
-                    this.item_need = item.item_need;
-                    this.cost_item = item.cost_item;
+                    this.use_se = item.use_se;
                     return;
                 }
             }
         }
         
+        // 本地化
+        public string name {get => LocalSys.Get(_name);}
+        public string tip {get => LocalSys.Get(_tip);}
+        public string functip {get => LocalSys.Get(_functip);}
+        public string event_str {get => LocalSys.Get(_event_str);}
+
         public override string ToString() => $"{GetType().Name}_{key}";
 
         public static List<int> list_keys{get{
             List<int> result = new();
-            var table = ConfigManager.GetTable("quest") as ConfQuestList;
+            var table = ConfigManager.GetTable("item") as ConfItemList;
             foreach (var conf in table.data)
                 result.Add(conf.key);
             return result;
@@ -378,9 +419,9 @@ namespace gamefang
     }
 
     [Serializable]
-    public class ConfQuestList : IConfList
+    public class ConfItemList : IConfList
     {
-        public List<ConfQuest> data;
+        public List<ConfItem> data;
 
         public object GetList()
         {
