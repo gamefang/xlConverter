@@ -2,6 +2,8 @@
 # 設置模塊
 
 from configparser import ConfigParser
+# 同包內模塊導入
+from . import misc
 
 class SettingData:
     # 類型標記分隔符
@@ -52,27 +54,10 @@ class SettingData:
         '''
         return self.get_at(self.default_section, name)
 
-# 類型轉化方法
-def to_int(raw) -> int:
-    try:
-        return int(raw)
-    except:
-        return 0
-def to_float(raw) -> float:
-    try:
-        return float(raw)
-    except:
-        return 0.0
-def to_bool(raw) -> bool:
-    return True if str(raw).lower() in ('true', '1') else False
-def to_list_str(raw, sep = ',') -> list:
-    raw = str(raw).strip()
-    raw_list = raw.split(sep)
-    return [item.strip() for item in raw_list]
 # 類型前綴與對應的轉化方法
 DIC_TYPE_PREFIX = {
-    '<i>' : to_int,
-    '<f>' : to_float,
-    '<b>' : to_bool,
-    '<ls>' : to_list_str,
+    '<i>' : misc.to_int,
+    '<f>' : misc.to_float,
+    '<b>' : misc.to_bool,
+    '<ls>' : misc.to_list_str,
 }
