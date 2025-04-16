@@ -10,6 +10,10 @@ class SettingData:
     def __init__(self, setting_fp, default_section = None):
         '''
         加載配置文件并初始化，可設置默認節點
+
+        :param setting_fp: 給出一個配置文件路徑
+        :param default_section: 可指定默認節點名稱，沒有則尋找DEFAULT，
+        還沒有則找所有節點中的第一個
         '''
         self.data = ConfigParser()
         # 加載
