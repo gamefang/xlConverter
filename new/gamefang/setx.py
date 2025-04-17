@@ -3,7 +3,7 @@
 
 from configparser import ConfigParser
 # 同包內模塊導入
-from . import misc
+from . import miscx
 
 class SettingData:
     # 類型標記分隔符
@@ -21,7 +21,7 @@ class SettingData:
         # 加載
         result = self.data.read(setting_fp, encoding='utf8')
         if not result:
-            raise AssertionError(f'setting file not exist: {setting_fp}')
+            raise Exception(f'setting file not exist: {setting_fp}')
         # 確定默認section
         if default_section: # 指定了默認section
             if self.data.has_section(default_section):
@@ -32,7 +32,7 @@ class SettingData:
         elif self.data.sections():
             self.default_section = self.data.sections()[0]
         else:
-            raise AssertionError(f'not a valid ini setting file: {setting_fp}')
+            raise Exception(f'not a valid ini setting file: {setting_fp}')
 
     def get_at(self, section, name):
         '''
@@ -56,8 +56,8 @@ class SettingData:
 
 # 類型前綴與對應的轉化方法
 DIC_TYPE_PREFIX = {
-    '<i>' : misc.to_int,
-    '<f>' : misc.to_float,
-    '<b>' : misc.to_bool,
-    '<ls>' : misc.to_list_str,
+    '<i>' : miscx.to_int,
+    '<f>' : miscx.to_float,
+    '<b>' : miscx.to_bool,
+    '<ls>' : miscx.to_list_str,
 }

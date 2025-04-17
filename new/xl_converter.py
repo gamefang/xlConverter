@@ -2,38 +2,38 @@
 # 主要處理流程
 
 # 本地模塊
-from gamefang.setting import SettingData
-from gamefang.file import *
-import gamefang.misc as misc
-import excel
+import gamefang.setx as setx
+import gamefang.filex as filex
+import gamefang.miscx as miscx
+import gamefang.excelx as excelx
 
 # region 數據加載
-def _get_raw_xl_data(setting_data):
+def _get_raw_xl_data(set_data):
     '''
     加載所有excel基本數據
     '''
     # 獲取全部excel文件名列表
-    target_folder = path_join(setting_data.folder, setting_data.get('xl_dir'))
-    excel_files = __excel_file_list(target_folder, setting_data.get('file_exts'), setting_data.get('recursive_xl_files'))
+    target_folder = _get_path_in_setting('xl_dir', set_data)
+    excel_files = __excel_file_list(target_folder, set_data.get('file_exts'), set_data.get('recursive_xl_files'))
     if not excel_files:
         print('no excel file found!')
         return
     # 獲取excel內容字典
     result = {}
     for fn in excel_files:
-        result.update(__workbook_data_load(fn, setting_data))
+        result.update(__workbook_data_load(fn, set_data))
     return result
 
-def __workbook_data_load(fn, setting_data):
+def __workbook_data_load(fn, set_data):
     '''
     excel工作簿數據加載
     '''
-    wb = excel.get_workbook(fn)
+    wb = excelx.get_workbook(fn)
     result = {}
     for name in wb.sheetnames:
-        if name.startswith(setting_data.get('sheet_name_prefix')):
-            real_name = name[len(setting_data.get('sheet_name_prefix')):]
-            raw_value_list = excel.get_sheet_range_value_list(wb[name], setting_data.get('bound_tag'))
+        if name.startswith(set_data.get('sheet_name_prefix')):
+            real_name = name[len(set_data.get('sheet_name_prefix')):]
+            raw_value_list = excelx.get_sheet_range_value_list(wb[name], set_data.get('bound_tag'))
             result[real_name] = {
                 'file_path' : fn,   # 來源excel文件路徑
                 'raw_value_list' : raw_value_list,  # 選定區域原始值二維列表
@@ -44,25 +44,25 @@ def __excel_file_list(folder, list_exts, is_recur = False):
     '''
     獲取Excel文件列表
     '''
-    list_file = get_file_list(folder, list_exts, is_recur)
-    return [file for file in list_file if not get_file_name(file).startswith(('~$','__'))]
+    list_file = filex.get_file_list(folder, list_exts, is_recur)
+    return [file for file in list_file if not filex.get_file_name(file).startswith(('~$','__'))]
 # endregion
 
-# region 數據清洗
+# region 數據清洗及轉化
 # 各數據類型的清洗方法，數據名需要和setting中對應
 DIC_TYPE_PARSE_METHOD = {
-    'int' : misc.to_int,
-    'float' : misc.to_float,
-    'bool' : misc.to_bool,
-    'str' : misc.to_str,
-    'intlist' : misc.to_list_int,
-    'floatlist' : misc.to_list_float,
-    'boollist' : misc.to_list_bool,
-    'strlist' : misc.to_list_str,
-    'dict' : misc.to_dict,
+    'int' : miscx.to_int,
+    'float' : miscx.to_float,
+    'bool' : miscx.to_bool,
+    'str' : miscx.to_str,
+    'intlist' : miscx.to_list_int,
+    'floatlist' : miscx.to_list_float,
+    'boollist' : miscx.to_list_bool,
+    'strlist' : miscx.to_list_str,
+    'dict' : miscx.to_dict,
 }
 
-def _data_clean(raw_data, setting_data):
+def _data_clean(raw_data, set_data):
     '''
     清洗數據，返回：
     ```python
@@ -84,7 +84,7 @@ def _data_clean(raw_data, setting_data):
     ```
     '''
     result = {}
-    note_signs = tuple(setting_data.get('note_signs'))
+    note_signs = tuple(set_data.get('note_signs'))
     for conf_name, datadic in raw_data.items():
         this_conf_dic = {}
         raw_value_list = datadic['raw_value_list']
@@ -97,7 +97,7 @@ def _data_clean(raw_data, setting_data):
         list_param_name = [item for num,item in enumerate(raw_value_list[1]) if is_using[num]]   # 實際表頭（不含註釋列）
         # 確定各列數據類型
         row = raw_value_list[0]   # 第一行為數據類型
-        all_list_type = [__confirm_type(item, setting_data) for item in row]    # 類型列表（含註釋列）
+        all_list_type = [__confirm_type(item, set_data) for item in row]    # 類型列表（含註釋列）
         list_type = [item for num,item in enumerate(all_list_type) if is_using[num]]    # 實際類型（不含註釋列）
         # 確定默認值
         row = raw_value_list[2] # 第三行可以是默認值
@@ -125,12 +125,12 @@ def _data_clean(raw_data, setting_data):
         result[conf_name]['raw_data'] = datadic # 同時存儲未清洗數據
     return result
 
-def __confirm_type(value, setting_data):
+def __confirm_type(value, set_data):
     '''
     確定數據類型，返回類型的字符串
     '''
     for type_str in DIC_TYPE_PARSE_METHOD.keys():
-        name_list = setting_data.get(f'{type_str}_name')
+        name_list = set_data.get(f'{type_str}_name')
         if value in name_list:
             return type_str
 
@@ -142,26 +142,110 @@ def __parse_type(value, type_str):
         return None
     method = DIC_TYPE_PARSE_METHOD[type_str]
     return method(value)
+
+def _data_convert(origin_data, base_data_style):
+    '''
+    數據格式轉化
+    '''
+    match base_data_style:
+        case 0: # 二維列表 [['key','hp'...],[1,30...],[2,50...]...]
+            return origin_data
+        case 1: # 條目字典列表 [{'key':1,'hp':30...},{'key':2,'hp':50...}...]
+            return __to_row_dict_list(origin_data)
+        case 2: # key嵌套字典 {1:{'hp':30...},2:{'hp':50...}...}
+            return __to_key_nested_dict(origin_data)
+    return origin_data
+
+def __to_row_dict_list(origin_data):
+    '''
+    from: [['key','hp'...],[1,30...],[2,50...]...]
+    to: [{'key':1,'hp':30...},{'key':2,'hp':50...}...]
+    '''
+    result=[]
+    list_param_name = origin_data[0]
+    for row_list in origin_data[1:]:
+        subdic = {}
+        for i in range(0, len(row_list)):
+            param_name = list_param_name[i]
+            subdic[param_name] = row_list[i]
+        result.append(subdic)
+    return result
+
+def __to_key_nested_dict(origin_data):
+    '''
+    from: [['key','hp'...],[1,30...],[2,50...]...]
+    to: {1:{'hp':30...},2:{'hp':50...}...}
+    '''
+    result = {}
+    list_param_name = origin_data[0]
+    for row_list in origin_data[1:]:
+        key = row_list[0]
+        subdic = {}
+        for i in range(1, len(row_list)):
+            param_name = list_param_name[i]
+            subdic[param_name] = row_list[i]
+        result[key] = subdic
+    return result
 # endregion
 
+# region 數據輸出
+def _data_output(all_xl_data, set_data):
+    '''
+    數據按要求輸出
+    '''
+    # pickle存儲
+    if set_data.get('cache_data'):
+        import pickle
+        cache_fp = _get_path_in_setting('cache_dir', set_data)
+        with open(cache_fp, 'wb') as file:
+            pickle.dump(all_xl_data, file)
+        # with open(cache_fp, 'rb') as file:
+        #     unpacked_data = pickle.load(file)
+        #     print(unpacked_data)    # 測試查看最終數據
+    # 文件輸出
+    output_template = set_data.get('output_template')
+    match output_template:
+        case 'csv':
+            pass
+        case 'json':
+            pass
+        case 'unity':
+            pass
+        case 'godot':
+            output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), 'raw_data.gd')
+            dic_converted_data = {key: value['converted_data'] for key, value in all_xl_data.items()}
+            import output_template.godot as godot
+            godot.output_in_one(dic_converted_data, output_fp)
+# endregion
 
-def main(setting_fp):
+def _get_path_in_setting(set_path, set_data):
+    '''
+    快捷獲取設置中所對應的路徑
+    '''
+    return filex.path_join(set_data.folder, set_data.get(set_path))
+
+
+def main(set_fp):
     '''
     主流程
     '''
     # 加載設置
-    setting_fp = get_abspath(setting_fp)
-    setting_data = SettingData(setting_fp)
-    setting_data.fp = setting_fp
-    setting_data.folder = get_folder(setting_fp)
-    print(f'setting loaded: {setting_fp}')
+    set_fp = filex.get_abspath(set_fp)
+    set_data = setx.SettingData(set_fp)
+    set_data.fp = set_fp
+    set_data.folder = filex.get_folder(set_fp)
+    print(f'setting loaded: {set_fp}')
     # 加載excel基本數據
-    all_raw_xl_data = _get_raw_xl_data(setting_data)
+    all_raw_xl_data = _get_raw_xl_data(set_data)
     if not all_raw_xl_data: return
-    # 數據清洗
-    all_xl_data = _data_clean(all_raw_xl_data, setting_data)
-    print(all_xl_data)
-    return
+    # 數據清洗及轉化
+    all_xl_data = _data_clean(all_raw_xl_data, set_data)
+    for k,v in all_xl_data.items():
+        using_origin_data = v['content'][1:]    # 去掉第一行的數據類型再進行轉換
+        converted_data = _data_convert(using_origin_data, set_data.get('base_data_style'))
+        all_xl_data[k]['converted_data'] = converted_data
+    # 選擇模板輸出
+    _data_output(all_xl_data, set_data)
     # 輸出數據，根據配置輸出為json、csv等
     # 基於緩存數據的額外代碼生成，指定相關的處理文件路徑并執行
 
