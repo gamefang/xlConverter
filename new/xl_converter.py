@@ -13,7 +13,7 @@ def _get_raw_xl_data(set_data):
     加載所有excel基本數據
     '''
     # 獲取全部excel文件名列表
-    target_folder = _get_path_in_setting('xl_dir', set_data)
+    target_folder = filex.path_join(set_data.folder, set_data.get('xl_dir'))
     excel_files = __excel_file_list(target_folder, set_data.get('file_exts'), set_data.get('recursive_xl_files'))
     if not excel_files:
         print('no excel file found!')
@@ -196,7 +196,7 @@ def _data_output(all_xl_data, set_data):
     # pickle存儲
     if set_data.get('cache_data'):
         import pickle
-        cache_fp = _get_path_in_setting('cache_dir', set_data)
+        cache_fp = filex.path_join(set_data.folder, set_data.get('cache_dir'))
         with open(cache_fp, 'wb') as file:
             pickle.dump(all_xl_data, file)
         # with open(cache_fp, 'rb') as file:
@@ -222,17 +222,11 @@ def _data_output(all_xl_data, set_data):
         case 'unity':
             pass
         case 'godot':   # 支持嵌套字典、單文件
-            output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), 'raw_data.gd')
+            output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), set_data.get('output_in_one_fn'))
             import output_template.godot as godot
-            godot.output_in_one(dic_converted_data, output_fp)
+            godot.output_in_one(dic_converted_data, output_fp,
+                header=set_data.get('output_file_header') or '', tail=set_data.get('output_file_tail') or '')
 # endregion
-
-def _get_path_in_setting(set_path, set_data):
-    '''
-    快捷獲取設置中所對應的路徑
-    '''
-    return filex.path_join(set_data.folder, set_data.get(set_path))
-
 
 def main(set_fp):
     '''
@@ -255,6 +249,15 @@ def main(set_fp):
         all_xl_data[k]['converted_data'] = converted_data
     # 選擇模板輸出
     _data_output(all_xl_data, set_data)
+    # 執行後續任務
+    done_scripts = set_data.get('done_scripts')
+    if (done_scripts):
+        import os
+        import sys
+        for script in done_scripts:
+            fp = filex.path_join(set_data.folder, script)
+            sys.stdout.flush()  # 確保按順序執行
+            os.system(f'python {fp}')
 
 if __name__ == '__main__':
     import sys

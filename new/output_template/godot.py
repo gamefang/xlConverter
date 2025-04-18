@@ -3,18 +3,17 @@
 
 import gamefang.filex as filex
 
-def output_in_one(dic_converted_data, output_fp):
+def output_in_one(dic_converted_data : dict, output_fp, header='', tail=''):
     '''
     輸出配置文件至一個文件中
     '''
     result = ''
-    result += '''class_name RawData
-extends Object
-
-'''
+    result += header.encode().decode('unicode_escape')  # _note 可轉義\n，但中文會亂碼
     for conf_name, converted_data in dic_converted_data.items():
         result += f'static var {conf_name} = {converted_data}\n'
-    result.replace('True', 'true')
-    result.replace('False', 'false')
-    filex.write_to_file(result[:-1], output_fp)
+    result += tail.encode().decode('unicode_escape')
+    result = result.replace(': True', ': true')
+    result = result.replace(': False', ': false')
+    result = result.replace(': None', ': null')
+    filex.write_to_file(result, output_fp)
     print(f'<{output_fp}> Done!')
