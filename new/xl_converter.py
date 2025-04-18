@@ -204,16 +204,25 @@ def _data_output(all_xl_data, set_data):
         #     print(unpacked_data)    # 測試查看最終數據
     # 文件輸出
     output_template = set_data.get('output_template')
+    dic_converted_data = {key: value['converted_data'] for key, value in all_xl_data.items()}
     match output_template:
-        case 'csv':
-            pass
+        case 'csv': # 支持二維列表、多文件
+            if set_data.get('base_data_style') != 0:
+                print('[base_data_style] must be [0] when [output_template] is [csv]!')
+                return
+            import csv
+            for conf_name, converted_data in dic_converted_data.items():
+                output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
+                with open(output_fp, 'w', encoding='utf-8') as file:
+                    writer = csv.writer(file, lineterminator='\n')
+                    writer.writerows(converted_data)
+                print(f'<{output_fp}> Done!')
         case 'json':
             pass
         case 'unity':
             pass
-        case 'godot':
+        case 'godot':   # 支持嵌套字典、單文件
             output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), 'raw_data.gd')
-            dic_converted_data = {key: value['converted_data'] for key, value in all_xl_data.items()}
             import output_template.godot as godot
             godot.output_in_one(dic_converted_data, output_fp)
 # endregion
@@ -246,14 +255,15 @@ def main(set_fp):
         all_xl_data[k]['converted_data'] = converted_data
     # 選擇模板輸出
     _data_output(all_xl_data, set_data)
-    # 輸出數據，根據配置輸出為json、csv等
-    # 基於緩存數據的額外代碼生成，指定相關的處理文件路徑并執行
 
 if __name__ == '__main__':
-    main('xl_converter.ini')
-    # 實際調用，ini應放置在項目固定目録下，sh腳本應指定固定的python文件位置
-    # import argparse
-    # parser = argparse.ArgumentParser(description = 'setting')
-    # parser.add_argument('--fp', type = str, required = True, help = 'the path of setting file')
-    # args = parser.parse_args()
-    # main(args.fp)
+    import sys
+    if len(sys.argv) == 1:  # 直接運行腳本（測試）
+        main('xl_converter.ini')
+    else:   # 外部帶參數調用
+        # 實際調用，ini應放置在項目固定目録下，sh腳本應指定固定的python文件位置
+        import argparse
+        parser = argparse.ArgumentParser(description = 'setting')
+        parser.add_argument('--fp', type = str, required = True, help = 'the path of setting file')
+        args = parser.parse_args()
+        main(args.fp)
