@@ -15,5 +15,6 @@ def output_in_one(dic_converted_data : dict, output_fp, header='', tail=''):
     result = result.replace(': True', ': true')
     result = result.replace(': False', ': false')
     result = result.replace(': None', ': null')
+    result = result.replace(': [None]', ': []')
     filex.write_to_file(result, output_fp)
     print(f'<{output_fp}> Done!')

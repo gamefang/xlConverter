@@ -34,3 +34,5 @@ def to_dict(raw) -> dict:
         return eval(str(raw))
     except:
         return None
+def to_list_dict(raw, sep = ',') -> list:
+    return [to_dict(item.strip()) for item in _get_raw_list(raw, sep)]
