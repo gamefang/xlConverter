@@ -18,9 +18,13 @@ def to_str(raw) -> str:
     if raw is None:
         return ''
     return str(raw)
-def _get_raw_list(raw, sep = ',') -> list:
+def _get_raw_list(raw, sep = ',', filter_none = False) -> list:
     raw = str(raw).strip()
-    return raw.split(sep)
+    li = raw.split(sep)
+    if filter_none:
+        return [item.strip() for item in li if item]
+    else:
+        return li
 def to_list_int(raw, sep = ',') -> list:
     return [to_int(item.strip()) for item in _get_raw_list(raw, sep)]
 def to_list_float(raw, sep = ',') -> list:
@@ -28,11 +32,11 @@ def to_list_float(raw, sep = ',') -> list:
 def to_list_bool(raw, sep = ',') -> list:
     return [to_bool(item.strip()) for item in _get_raw_list(raw, sep)]
 def to_list_str(raw, sep = ',') -> list:
-    return [to_str(item.strip()) for item in _get_raw_list(raw, sep)]
+    return [to_str(item.strip()) for item in _get_raw_list(raw, sep, filter_none=True)]
 def to_dict(raw) -> dict:
     try:
         return eval(str(raw))
     except:
-        return None
+        return {}
 def to_list_dict(raw, sep = ',') -> list:
-    return [to_dict(item.strip()) for item in _get_raw_list(raw, sep)]
+    return [to_dict(item.strip()) for item in _get_raw_list(raw, sep, filter_none=True)]
