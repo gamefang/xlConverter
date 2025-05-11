@@ -20,6 +20,7 @@ def to_str(raw) -> str:
     return str(raw)
 def _get_raw_list(raw, sep = ',', filter_none = False) -> list:
     raw = str(raw).strip()
+    if raw in ('', '[]'): return []
     li = raw.split(sep)
     if filter_none:
         return [item.strip() for item in li if item]
