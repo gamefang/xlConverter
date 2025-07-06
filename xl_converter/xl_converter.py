@@ -263,7 +263,7 @@ def main(set_fp):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) == 1 and sys.argv[0]:  # 直接運行腳本（測試）
-        main('xl_converter.ini')
+        main('../sample/xl_converter.ini')
     else:   # 外部帶參數調用
         # 實際調用，ini應放置在項目固定目録下，sh腳本應指定固定的python文件位置
         import argparse
