@@ -218,8 +218,21 @@ def _data_output(all_xl_data, set_data):
                     writer = csv.writer(file, lineterminator='\n')
                     writer.writerows(converted_data)
                 print(f'<{output_fp}> Done!')
-        case 'json':
-            pass
+        case 'json':    # 支持任意類型
+            import json
+            if set_data.get('output_in_one'):
+                output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), set_data.get('output_in_one_fn'))
+                with open(output_fp, 'w', encoding='utf-8') as file:
+                    jsonstr = json.dumps(dic_converted_data)
+                    file.write(jsonstr)
+                print(f'<{output_fp}> Done!')
+            else:
+                for conf_name, converted_data in dic_converted_data.items():
+                    output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
+                    with open(output_fp, 'w', encoding='utf-8') as file:
+                        jsonstr = json.dumps(dic_converted_data[conf_name])
+                        file.write(jsonstr)
+                    print(f'<{output_fp}> Done!')
         case 'unity':
             pass
         case 'godot':   # 支持嵌套字典、單文件

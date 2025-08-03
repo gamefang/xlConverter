@@ -10,7 +10,7 @@ def output_in_one(dic_converted_data : dict, output_fp, header='', tail=''):
     result = ''
     result += header.encode().decode('unicode_escape')  # _note 可轉義\n，但中文會亂碼
     for conf_name, converted_data in dic_converted_data.items():
-        result += f'static var {conf_name} = {converted_data}\n'
+        result += f'static var {conf_name} := {converted_data}\n'
     result += tail.encode().decode('unicode_escape')
     result = result.replace(': True', ': true')
     result = result.replace(': False', ': false')
