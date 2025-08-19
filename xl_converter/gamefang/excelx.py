@@ -34,21 +34,19 @@ def get_sheet_range(sheet, tag = '#'):
     :param sheet: openpyxl的sheet
     :param tag: 標記符號，位於區域的右上角和左下角（不包含）
     '''
-    max_row = sheet.max_row
-    max_column = sheet.max_column
     row_start = row_end = col_start = col_end = 0
-    for row in range(1, max_row + 1):
-        for col in range(1, max_column + 1):
-            cell_value = sheet.cell(row=row, column=col).value
-            if cell_value == tag:
-                if row_start == 0:
-                    row_start = row
-                    col_end = col - 1
-                else:
-                    row_end = row - 1
-                    col_start = col
-            if row_start != 0 and row_end != 0:
-                break
+    for row_index, row_values in enumerate(sheet.iter_rows(values_only=True), start=1):
+        try:
+            col_index = list(row_values).index(tag) + 1
+        except ValueError:
+            continue
+        if row_start == 0:
+            row_start = row_index
+            col_end = col_index - 1
+        else:
+            row_end = row_index - 1
+            col_start = col_index
+            break
     return [row_start, row_end, col_start, col_end]
 
 def get_sheet_range_value_list(sheet, tag = '#'):
