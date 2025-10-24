@@ -4,7 +4,7 @@
 # Ubuntu24+: sudo apt install python3-openpyxl && sudo apt-mark manual python3-openpyxl
 #==============================================================
 # 配置導表工具目錄
-FOLDER_TOOL="/mnt/GAME/git/xlConverter"
+FOLDER_TOOL="/mnt/GAME/git/xl_converter"
 #==============================================================
 
 # 需保持設置ini始終與sh同級，位於實際項目文件夾內

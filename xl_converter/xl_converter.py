@@ -200,6 +200,7 @@ def _data_output(all_xl_data, set_data: dict) -> None:
     if set_data.get('cache_data'):
         import pickle
         cache_fp = gFile.path_join(set_data.get('folder'), set_data.get('cache_dir'))
+        gFile.ensure_fp(cache_fp)
         with open(cache_fp, 'wb') as file:
             pickle.dump(all_xl_data, file)
         # with open(cache_fp, 'rb') as file:

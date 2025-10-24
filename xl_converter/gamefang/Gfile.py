@@ -75,6 +75,15 @@ class gFile:
     def is_file_exists(path: str) -> bool:
         '''路徑是否存在'''
         return os.path.exists(path)
+    
+    @staticmethod
+    def ensure_fp(path: str) -> bool:
+        '''檢查文件路徑，如文件夾不存在則自動創建'''
+        folder = os.path.dirname(path)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+            return True
+        return False
 
     @staticmethod
     def write_to_file(content, output_fp: str, auto_md: bool = True) -> None:
@@ -86,12 +95,10 @@ class gFile:
         :param auto_md: 是否自動創建相應路徑
         '''
         output_fullpath = __class__.get_abspath(output_fp)
-        output_folder = os.path.dirname(output_fullpath)
-        if not __class__.is_file_exists(output_folder):
-            if auto_md:
-                os.makedirs(output_folder)
-            else:
-                raise Exception(f'{output_fp} not exist!')
+        if auto_md:
+            __class__.ensure_fp(output_fullpath)
+        else:
+            raise Exception(f'{output_fp} not exist!')
         with open(output_fullpath, 'w', encoding='utf-8') as file:
             file.write(content)
 
