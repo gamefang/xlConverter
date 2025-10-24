@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 # 主要處理流程
 
-# 本地模塊
-import gamefang.setx as setx
-import gamefang.filex as filex
-import gamefang.miscx as miscx
-import gamefang.excelx as excelx
+#region import
+# my
+from gamefang.Gconf import gConf
+from gamefang.Gfile import gFile
+from gamefang.Gtype import gType
+from gamefang.Gexcel import gExcel
+#endregion
 
 # region 數據加載
-def _get_raw_xl_data(set_data):
+def _get_raw_xl_data(set_data: dict) -> dict:
     '''
     加載所有excel基本數據
     '''
     # 獲取全部excel文件名列表
-    target_folder = filex.path_join(set_data.folder, set_data.get('xl_dir'))
+    target_folder = gFile.path_join(set_data.get('folder'), set_data.get('xl_dir'))
     excel_files = __excel_file_list(target_folder, set_data.get('file_exts'), set_data.get('recursive_xl_files'))
     if not excel_files:
         print('no excel file found!')
@@ -24,46 +26,46 @@ def _get_raw_xl_data(set_data):
         result.update(__workbook_data_load(fn, set_data))
     return result
 
-def __workbook_data_load(fn, set_data):
+def __workbook_data_load(fn: str, set_data: dict) -> dict:
     '''
     excel工作簿數據加載
     '''
-    wb = excelx.get_workbook(fn)
+    wb = gExcel.get_workbook(fn)
     result = {}
     for name in wb.sheetnames:
         if name.startswith(set_data.get('sheet_name_prefix')):
             real_name = name[len(set_data.get('sheet_name_prefix')):]
-            raw_value_list = excelx.get_sheet_range_value_list(wb[name], set_data.get('bound_tag'))
+            raw_value_list = gExcel.get_sheet_range_value_list(wb[name], set_data.get('bound_tag'))
             result[real_name] = {
                 'file_path' : fn,   # 來源excel文件路徑
                 'raw_value_list' : raw_value_list,  # 選定區域原始值二維列表
             }
     return result
 
-def __excel_file_list(folder, list_exts, is_recur = False):
+def __excel_file_list(folder: str, list_exts: list[str], is_recur = False) -> list[str]:
     '''
     獲取Excel文件列表
     '''
-    list_file = filex.get_file_list(folder, list_exts, is_recur)
-    return [file for file in list_file if not filex.get_file_name(file).startswith(('~$','__'))]
+    list_file = gFile.get_file_list(folder, list_exts, is_recur)
+    return [file for file in list_file if not gFile.get_file_name(file).startswith(('~$','__'))]
 # endregion
 
 # region 數據清洗及轉化
 # 各數據類型的清洗方法，數據名需要和setting中對應
 DIC_TYPE_PARSE_METHOD = {
-    'int' : miscx.to_int,
-    'float' : miscx.to_float,
-    'bool' : miscx.to_bool,
-    'str' : miscx.to_str,
-    'intlist' : miscx.to_list_int,
-    'floatlist' : miscx.to_list_float,
-    'boollist' : miscx.to_list_bool,
-    'strlist' : miscx.to_list_str,
-    'dict' : miscx.to_dict,
-    'dictlist' : miscx.to_list_dict,
+    'int' : gType.to_int,
+    'float' : gType.to_float,
+    'bool' : gType.to_bool,
+    'str' : gType.to_str,
+    'intlist' : gType.to_list_int,
+    'floatlist' : gType.to_list_float,
+    'boollist' : gType.to_list_bool,
+    'strlist' : gType.to_list_str,
+    'dict' : gType.to_dict,
+    'dictlist' : gType.to_list_dict,
 }
 
-def _data_clean(raw_data, set_data):
+def _data_clean(raw_data: dict, set_data: dict) -> dict:
     '''
     清洗數據，返回：
     ```python
@@ -90,7 +92,7 @@ def _data_clean(raw_data, set_data):
         this_conf_dic = {}
         raw_value_list = datadic['raw_value_list']
         # 確定列是否使用
-        row = raw_value_list[1]   # 第二行為字段名稱
+        row: str = raw_value_list[1]   # 第二行為字段名稱
         if row[0] != 'key': # 字段名應以key起始
             print(f'warning: {conf_name} is not start with key param!')
         is_using = [not item.startswith(note_signs) for item in row]
@@ -126,7 +128,7 @@ def _data_clean(raw_data, set_data):
         result[conf_name]['raw_data'] = datadic # 同時存儲未清洗數據
     return result
 
-def __confirm_type(value, set_data):
+def __confirm_type(value, set_data: dict) -> str:
     '''
     確定數據類型，返回類型的字符串
     '''
@@ -135,7 +137,7 @@ def __confirm_type(value, set_data):
         if value in name_list:
             return type_str
 
-def __parse_type(value, type_str):
+def __parse_type(value, type_str: str):
     '''
     根據類型轉化數據
     '''
@@ -144,7 +146,7 @@ def __parse_type(value, type_str):
     method = DIC_TYPE_PARSE_METHOD[type_str]
     return method(value)
 
-def _data_convert(origin_data, base_data_style):
+def _data_convert(origin_data, base_data_style: int):
     '''
     數據格式轉化
     '''
@@ -157,7 +159,7 @@ def _data_convert(origin_data, base_data_style):
             return __to_key_nested_dict(origin_data)
     return origin_data
 
-def __to_row_dict_list(origin_data):
+def __to_row_dict_list(origin_data: list) -> list:
     '''
     from: [['key','hp'...],[1,30...],[2,50...]...]
     to: [{'key':1,'hp':30...},{'key':2,'hp':50...}...]
@@ -172,7 +174,7 @@ def __to_row_dict_list(origin_data):
         result.append(subdic)
     return result
 
-def __to_key_nested_dict(origin_data):
+def __to_key_nested_dict(origin_data: list) -> dict:
     '''
     from: [['key','hp'...],[1,30...],[2,50...]...]
     to: {1:{'hp':30...},2:{'hp':50...}...}
@@ -190,14 +192,14 @@ def __to_key_nested_dict(origin_data):
 # endregion
 
 # region 數據輸出
-def _data_output(all_xl_data, set_data):
+def _data_output(all_xl_data, set_data: dict) -> None:
     '''
     數據按要求輸出
     '''
     # pickle存儲
     if set_data.get('cache_data'):
         import pickle
-        cache_fp = filex.path_join(set_data.folder, set_data.get('cache_dir'))
+        cache_fp = gFile.path_join(set_data.get('folder'), set_data.get('cache_dir'))
         with open(cache_fp, 'wb') as file:
             pickle.dump(all_xl_data, file)
         # with open(cache_fp, 'rb') as file:
@@ -213,7 +215,7 @@ def _data_output(all_xl_data, set_data):
                 return
             import csv
             for conf_name, converted_data in dic_converted_data.items():
-                output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
+                output_fp = gFile.path_join(set_data.get('folder'), set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
                 with open(output_fp, 'w', encoding='utf-8') as file:
                     writer = csv.writer(file, lineterminator='\n')
                     writer.writerows(converted_data)
@@ -221,14 +223,14 @@ def _data_output(all_xl_data, set_data):
         case 'json':    # 支持任意類型
             import json
             if set_data.get('output_in_one'):
-                output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), set_data.get('output_in_one_fn'))
+                output_fp = gFile.path_join(set_data.get('folder'), set_data.get('output_dir'), set_data.get('output_in_one_fn'))
                 with open(output_fp, 'w', encoding='utf-8') as file:
                     jsonstr = json.dumps(dic_converted_data)
                     file.write(jsonstr)
                 print(f'<{output_fp}> Done!')
             else:
                 for conf_name, converted_data in dic_converted_data.items():
-                    output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
+                    output_fp = gFile.path_join(set_data.get('folder'), set_data.get('output_dir'), f'{conf_name}.{set_data.get("output_ext")}')
                     with open(output_fp, 'w', encoding='utf-8') as file:
                         jsonstr = json.dumps(dic_converted_data[conf_name])
                         file.write(jsonstr)
@@ -236,21 +238,22 @@ def _data_output(all_xl_data, set_data):
         case 'unity':
             pass
         case 'godot':   # 支持嵌套字典、單文件
-            output_fp = filex.path_join(set_data.folder, set_data.get('output_dir'), set_data.get('output_in_one_fn'))
+            output_fp = gFile.path_join(set_data.get('folder'), set_data.get('output_dir'), set_data.get('output_in_one_fn'))
             import output_template.godot as godot
             godot.output_in_one(dic_converted_data, output_fp,
                 header=set_data.get('output_file_header') or '', tail=set_data.get('output_file_tail') or '')
 # endregion
 
-def main(set_fp):
+def main(set_fp: str) -> None:
     '''
     主流程
     '''
+    print('----------[xl_converter]----------')
     # 加載設置
-    set_fp = filex.get_abspath(set_fp)
-    set_data = setx.SettingData(set_fp)
-    set_data.fp = set_fp
-    set_data.folder = filex.get_folder(set_fp)
+    set_fp = gFile.get_abspath(set_fp)
+    set_data = gConf.get_toml(set_fp)
+    set_data['fp'] = set_fp
+    set_data['folder'] = gFile.get_folder(set_fp)
     print(f'setting loaded: {set_fp}')
     # 加載excel基本數據
     all_raw_xl_data = _get_raw_xl_data(set_data)
@@ -269,14 +272,15 @@ def main(set_fp):
         import os
         import sys
         for script in done_scripts:
-            fp = filex.path_join(set_data.folder, script)
+            fp = gFile.path_join(set_data.get('folder'), script)
             sys.stdout.flush()  # 確保按順序執行
             os.system(f'python {fp}')
+    print('----------[xl_converter]----------')
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) == 1 and sys.argv[0]:  # 直接運行腳本（測試）
-        main('../sample/xl_converter.ini')
+        main(r'../sample/xl_converter.toml')    # 視配置文件位置手動調整
     else:   # 外部帶參數調用
         # 實際調用，ini應放置在項目固定目録下，sh腳本應指定固定的python文件位置
         import argparse

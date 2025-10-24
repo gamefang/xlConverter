@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # godot配置輸出
 
-import gamefang.filex as filex
+from gamefang.Gfile import gFile
 
 def output_in_one(dic_converted_data : dict, output_fp, header='', tail=''):
     '''
@@ -16,5 +16,5 @@ def output_in_one(dic_converted_data : dict, output_fp, header='', tail=''):
     result = result.replace(': False', ': false')
     result = result.replace(': None', ': null')
     result = result.replace(': [None]', ': []')
-    filex.write_to_file(result, output_fp)
-    print(f'<{output_fp}> Done!')
+    gFile.write_to_file(result, output_fp)
+    print(f'Godot File Done! <{output_fp}>')

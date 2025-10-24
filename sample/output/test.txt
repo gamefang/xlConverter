@@ -1,2 +1,0 @@
-key,_name,tip,pickable,droplist,dic,time,__count
-2,fweofjw,a,True,"[1, 2, 3]","{'a': 1, 'b': 2}",3.5,6
